@@ -31,7 +31,7 @@ namespace KerbalStats
 
 		protected virtual void OnClose() {}
 
-		protected virtual void OnStateChange(Event e) {}
+		protected abstract void OnStateChange (DisplayState state, String name);
 
 		private void OnDraw() {
 			if (this.visible) {

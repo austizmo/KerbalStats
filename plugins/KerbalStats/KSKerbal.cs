@@ -31,7 +31,7 @@ namespace KerbalStats
 		}
 
 		public String PrintStats() {
-			String stats = "Sanity: \t" + this.currentSanity + "/" + this.baseSanity + "\n";
+			String stats = "Sanity: \t" + this.currentSanity.ToString() + "/" + this.baseSanity.ToString() + "\n";
 			return stats;
 		}
 	}

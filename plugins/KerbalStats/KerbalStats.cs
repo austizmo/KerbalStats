@@ -78,10 +78,6 @@ namespace KerbalStats
 			this.window.SetVisible(false);
 			this.state = e.newState;
 			switch(e.newState) {
-				case DisplayState.SELECTOR_ALL:
-					Debug.Log("state change to selector");
-					this.window = new KerbalSelector(model.GetKerbals());
-					break;
 				case DisplayState.SELECTOR_VESSEL:
 					Debug.Log("state change to vessel");
 					this.window = new KerbalSelector(model.GetKerbals(FlightGlobals.ActiveVessel));
@@ -90,8 +86,14 @@ namespace KerbalStats
 					Debug.Log("state change to stats");
 					this.window = new StatsWindow(model.GetKerbal(e.kerbalName));
 				break;
+				case DisplayState.HIDDEN: //fallthrough to all selector
+				case DisplayState.SELECTOR_ALL:
+				default:
+					Debug.Log("state change to selector");
+					this.window = new KerbalSelector(model.GetKerbals());
+					break;
 			}
-			this.window.SetVisible(true);
+			if(e.newState != DisplayState.HIDDEN) this.window.SetVisible(true);
 			this.window.Changed += new StateChangeHandler(OnStateChange);
 		}
 

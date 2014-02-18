@@ -24,18 +24,22 @@ namespace KerbalStats
 					GUILayout.BeginHorizontal();
 						GUILayout.Label(kerbal.name);
 						if(GUILayout.Button("View Stats")) {
-							Debug.Log("Trying to fire event");
-							StateChangeEventArgs args = new StateChangeEventArgs();
-							args.newState = DisplayState.KERBAL_STATS;
-							args.kerbalName = kerbal.name;
-							Changed(this, args);
+							OnStateChange(DisplayState.KERBAL_STATS, kerbal.name);
 						}
 					GUILayout.EndHorizontal();
 				}
 				GUILayout.EndScrollView();
-				if (GUILayout.Button("Close", this.buttonStyle)) SetVisible(false);
+				if (GUILayout.Button("Close", this.buttonStyle)) OnStateChange(DisplayState.HIDDEN, "");
 			GUILayout.EndVertical();
 			GUI.DragWindow();
+		}
+
+		protected override void OnStateChange(DisplayState state, String name) {
+			StateChangeEventArgs args = new StateChangeEventArgs();
+			args.newState 	= state;
+			args.kerbalName = name;
+
+			Changed(this, args);
 		}
 
 		protected override void OnOpen() {

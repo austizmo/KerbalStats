@@ -18,9 +18,18 @@ namespace KerbalStats
 			GUILayout.BeginVertical(this.windowStyle);
 				GUILayout.Label("Stats");
 				GUILayout.Label(this.kerbal.PrintStats());
-				if (GUILayout.Button("Close", this.buttonStyle)) SetVisible(false);
+				if (GUILayout.Button("Close", this.buttonStyle)) OnStateChange(DisplayState.SELECTOR_ALL, "");
 			GUILayout.EndVertical();
 			GUI.DragWindow();
+		}
+
+
+		protected override void OnStateChange(DisplayState state, String name) {
+			StateChangeEventArgs args = new StateChangeEventArgs();
+			args.newState 	= state;
+			args.kerbalName = name;
+
+			Changed(this, args);
 		}
 	}
 }
