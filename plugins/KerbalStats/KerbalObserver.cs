@@ -6,6 +6,8 @@ namespace KerbalStats
 {
 	class KerbalObserver
 	{
-		public KerbalObserver() {}
+		public KerbalObserver() {
+			Debug.Log("Creating observer");
+		}
 	}
 }

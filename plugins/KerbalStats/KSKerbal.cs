@@ -6,10 +6,10 @@ namespace KerbalStats
 {
 	public class KSKerbal
 	{
-		ProtoCrewMember kerbal;
+		public ProtoCrewMember kerbal;
 
-		public int baseSanity;
-		public int currentSanity;
+		public float baseSanity;
+		public float currentSanity;
 
 		public String name {
 			get {
@@ -24,8 +24,15 @@ namespace KerbalStats
 			this.currentSanity 	= this.baseSanity;
 		}
 
-		private int DetermineBaseSanity() {
-			return 100;
+		private float DetermineBaseSanity() {
+			System.Random random = new System.Random();
+			int s = random.Next(70,100);
+			return s/100;
+		}
+
+		public String PrintStats() {
+			String stats = "Sanity: \t" + this.currentSanity + "/" + this.baseSanity + "\n";
+			return stats;
 		}
 	}
 }

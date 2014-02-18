@@ -10,10 +10,13 @@ namespace KerbalStats
 		private readonly string title;
 
 		private 	bool 		visible    	= false;
-		protected 	Rect 		bounds   	= new Rect();
+		protected 	Rect 		bounds   	= new Rect(0,0,600,800);
 		protected 	GUIStyle 	windowStyle = new GUIStyle(HighLogic.Skin.window);
 		protected	GUIStyle	buttonStyle	= new GUIStyle(HighLogic.Skin.button);
+		protected 	GUIStyle 	scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
 
+		public abstract event StateChangeHandler Changed;
+		
 		public AbstractWindow(int id, string title) {
 			this.id     = id;
 			this.title  = title;
@@ -27,6 +30,8 @@ namespace KerbalStats
 		protected virtual void OnOpen() {}
 
 		protected virtual void OnClose() {}
+
+		protected virtual void OnStateChange(Event e) {}
 
 		private void OnDraw() {
 			if (this.visible) {
