@@ -30,8 +30,8 @@ namespace KerbalStats
 
 		public KerbalStats() {
 			Debug.Log("in kerbalstats constructros");
-			this.observer 	= new KerbalObserver();
 			this.model 		= new StatsModel();
+			this.observer 	= new KerbalObserver(this.model);
 
 			CreateWindow();
 			AddToolbarButton();
@@ -128,6 +128,8 @@ namespace KerbalStats
 
 		public void OnDestroy() {
 			Debug.Log("KerbalStats.cs OnDestroy()");
+			this.observer.OnDestroy();
+			this.model.OnDestroy();
 			this.observer = null;
 			this.model = null;
 		}

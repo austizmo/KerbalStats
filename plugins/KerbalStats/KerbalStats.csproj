@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KerbalStats</RootNamespace>
     <AssemblyName>KerbalStats</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -37,7 +37,9 @@
     <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
+    <Reference Include="System">
+      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -46,6 +48,12 @@
     </Reference>
     <Reference Include="aaa_Toolbar">
       <HintPath>..\..\..\..\..\ksp_dev\GameData\000_Toolbar\Toolbar.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml">
+      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
@@ -61,5 +69,6 @@
     <Compile Include="StatsModel.cs" />
     <Compile Include="StatsAddon.cs" />
     <Compile Include="KerbalStats.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
 </Project>
