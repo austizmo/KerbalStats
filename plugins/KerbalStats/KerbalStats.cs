@@ -17,6 +17,8 @@ namespace KerbalStats
 
 	class KerbalStats 
 	{	
+		public static System.Random rng = new System.Random();
+
 		private IButton button;
 		private String 	button_on;
 		private	String 	button_off;

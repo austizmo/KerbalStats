@@ -61,8 +61,7 @@ namespace KerbalStats
 		 * called once when creating a kerbal for the first time
 		 */
 		private double DetermineBaseSanity() {
-			System.Random random = new System.Random();
-			int s = random.Next(70,100);
+			int s = KerbalStats.rng.Next(70,100);
 			return (double)s/100;
 		}
 
