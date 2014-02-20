@@ -10,12 +10,15 @@ namespace KerbalStats
 
 		public StatsModel() {
 			//load our kerbals
-			this.kerbals = SaveManager.LoadKerbals();
-			if(kerbals == null || kerbals.Count == 0) {
-				if(HighLogic.CurrentGame != null) {
-					CreateKerbals();
-				} else {
-				}
+			if(HighLogic.CurrentGame != null) {
+				Debug.Log("Loading Kerbals");
+				this.kerbals = SaveManager.LoadKerbals();
+				if(kerbals == null || kerbals.Count == 0) {	
+						Debug.Log("Unable to load Kerbals "+this.kerbals.Count);
+						CreateKerbals();
+				} 
+			} else {
+				this.kerbals = new List<KSKerbal>();
 			}
 		}
 
@@ -23,6 +26,7 @@ namespace KerbalStats
 		 * Create a KSKerbal for all the kerbals in our current game, then save them
 		 */
 		private void CreateKerbals() {
+			Debug.Log("Creating brand new kerbals");
 			this.kerbals = new List<KSKerbal>();
 			foreach (ProtoCrewMember kerbal in HighLogic.CurrentGame.CrewRoster) {
 				this.kerbals.Add(new KSKerbal(kerbal));
@@ -35,7 +39,12 @@ namespace KerbalStats
 		}
 
 		public List<KSKerbal> GetKerbals(Vessel vessel) {
-			return this.kerbals;
+			List<KSKerbal> crew = new List<KSKerbal>();
+			foreach(ProtoCrewMember crewMember in vessel.GetVesselCrew()) {
+				KSKerbal kerbal = GetKerbal(crewMember.name);
+				crew.Add(kerbal);
+			}
+			return crew;
 		}
 
 		public KSKerbal GetKerbal(String name) {

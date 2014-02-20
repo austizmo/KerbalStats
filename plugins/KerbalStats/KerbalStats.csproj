@@ -7,7 +7,6 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7EE453FF-EC28-4B09-940C-B9C1AC3D8DB9}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KerbalStats</RootNamespace>
     <AssemblyName>KerbalStats</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -20,13 +19,13 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
     <CustomCommands>
       <CustomCommands>
         <Command type="AfterBuild" command="..\..\build.bat" />
         <Command type="AfterBuild" command="..\..\..\..\..\ksp_dev\KSP.exe" />
       </CustomCommands>
     </CustomCommands>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -37,9 +36,6 @@
     <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System">
-      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -49,26 +45,32 @@
     <Reference Include="aaa_Toolbar">
       <HintPath>..\..\..\..\..\ksp_dev\GameData\000_Toolbar\Toolbar.dll</HintPath>
     </Reference>
-    <Reference Include="System.Xml">
-      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.Xml.dll</HintPath>
-    </Reference>
     <Reference Include="System.Core">
       <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.Core.dll</HintPath>
     </Reference>
+    <Reference Include="System">
+      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml">
+      <HintPath>..\..\..\..\..\ksp_dev\KSP_Data\Managed\System.Xml.dll</HintPath>
+    </Reference>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <Compile Include="AbstractWindow.cs" />
     <Compile Include="KerbalObserver.cs" />
-    <Compile Include="KerbalSelector.cs" />
     <Compile Include="KSPAddonFixed.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KSKerbal.cs" />
     <Compile Include="SaveManager.cs" />
-    <Compile Include="StatsWindow.cs" />
     <Compile Include="StatsModel.cs" />
     <Compile Include="StatsAddon.cs" />
     <Compile Include="KerbalStats.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="dialogs\AbstractWindow.cs" />
+    <Compile Include="dialogs\KerbalSelector.cs" />
+    <Compile Include="dialogs\StatsWindow.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="dialogs\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

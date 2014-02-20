@@ -29,12 +29,13 @@ namespace KerbalStats
 		private StatsModel 		model;	
 
 		public KerbalStats() {
-			Debug.Log("in kerbalstats constructros");
 			this.model 		= new StatsModel();
 			this.observer 	= new KerbalObserver(this.model);
 
-			CreateWindow();
-			AddToolbarButton();
+			if(HighLogic.CurrentGame != null) {
+				CreateWindow();
+				AddToolbarButton();
+			}
 		}
 
 		private DisplayState State {

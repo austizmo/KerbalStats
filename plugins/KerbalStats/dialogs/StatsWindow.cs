@@ -31,5 +31,13 @@ namespace KerbalStats
 
 			Changed(this, args);
 		}
+
+		protected override void OnOpen() {
+			SetPosition(100,100);
+		}
+
+		protected override void OnClose() {
+			this.kerbal = null;
+		}
 	}
 }

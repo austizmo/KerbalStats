@@ -47,7 +47,7 @@ namespace KerbalStats
 		}
 
 		protected override void OnClose() {
-
+			this.kerbals = null;
 		}
 	}
 }
