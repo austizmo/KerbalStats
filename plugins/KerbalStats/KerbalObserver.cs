@@ -8,6 +8,11 @@ namespace KerbalStats
 	{
 		private StatsModel model;
 
+		/**
+		 * Listens for interesting events, and alerts the appropriate KSKerbals when they occur
+		 *
+		 * Takes a StatsModel instance, for access to Kerbals
+		 */
 		public KerbalObserver(StatsModel model) {
 			this.model = model;
 
@@ -20,7 +25,6 @@ namespace KerbalStats
 			foreach(KSKerbal kerbal in this.model.GetKerbals(vessel.vesselRef)) {
 				kerbal.OnMissionComplete();
 			}
-			Debug.Log("After OnVesselRecovered");
 		}
 
 		private void OnLaunch(EventReport report)

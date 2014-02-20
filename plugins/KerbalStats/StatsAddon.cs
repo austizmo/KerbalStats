@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KerbalStats
 {
 	[KSPAddonFixed(KSPAddon.Startup.SpaceCentre, false, typeof(StatsAddon))]
-	public class StatsAddon : MonoBehaviour
+	class StatsAddon : MonoBehaviour
 	{
 		private KerbalStats stats = null;
 

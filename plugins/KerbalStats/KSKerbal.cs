@@ -7,17 +7,20 @@ using KSP.IO;
 
 namespace KerbalStats
 {
+	/** types of sanity degredation triggers */
+	public enum SanityTriggers { MISSION_TIME, COLLISION, DISTANCE, KERBAL_DEATH, BEDLAM, SOLITUDE }
+
 	/**
 	 * KSKerbal represents a unique kerbal, and contains properties pertaining to its stats, methods for serialization and data access, and methods for updating stats on events. 
 	 */
-	public class KSKerbal
+	class KSKerbal
 	{
 		//used as a unique identifier for this kerbal
 		public String name;
 
 		//stat values
-		public double baseSanity;
-		public double currentSanity;
+		public int baseSanity;
+		public int currentSanity;
 		public double hiredTime;
 		public double lastLaunchTime;
 		public double lastReturnTime;
@@ -31,10 +34,9 @@ namespace KerbalStats
 		 * Given a ProtoCrewMember, create a new KSKerbal with default stats
 		 */
 		public KSKerbal(ProtoCrewMember kerbal) {
-			Debug.Log("Creating new kerbal");
+			//Debug.Log("Creating new kerbal");
 			this.name 			= kerbal.name;
 			this.baseSanity 	= DetermineBaseSanity();
-			Debug.Log(this.name +" has "+this.baseSanity+" sanity");
 			this.currentSanity 	= this.baseSanity;
 			this.hiredTime 		= Planetarium.GetUniversalTime();
 			this.lastLaunchTime = Planetarium.GetUniversalTime();
@@ -60,9 +62,24 @@ namespace KerbalStats
 		 * Determines the kerbals max sanity stat
 		 * called once when creating a kerbal for the first time
 		 */
-		private double DetermineBaseSanity() {
-			int s = KerbalStats.rng.Next(70,100);
-			return (double)s/100;
+		private int DetermineBaseSanity() {
+			return KerbalStats.rng.Next(70,100);
+		}
+
+		/**
+		 * Detracts from the sanity stat based on a trigger
+		 */
+		private void DegradeSanity(SanityTriggers trigger) {
+			switch(trigger) {
+				case SanityTriggers.MISSION_TIME:
+				case SanityTriggers.COLLISION:
+				case SanityTriggers.DISTANCE:
+				case SanityTriggers.KERBAL_DEATH:
+				case SanityTriggers.BEDLAM:
+				case SanityTriggers.SOLITUDE:
+				default:
+					break;
+			}
 		}
 
 		/**

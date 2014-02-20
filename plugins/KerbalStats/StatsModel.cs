@@ -8,10 +8,13 @@ namespace KerbalStats
 	{
 		private List<KSKerbal> kerbals;
 
+		/**
+		 * Holds onto our list of KSKerbals and provides methods for accessing them
+		 */
 		public StatsModel() {
 			//load our kerbals
 			if(HighLogic.CurrentGame != null) {
-				Debug.Log("Loading Kerbals");
+				//Debug.Log("Loading Kerbals");
 				this.kerbals = SaveManager.LoadKerbals();
 				if(kerbals == null || kerbals.Count == 0) {	
 						Debug.Log("Unable to load Kerbals "+this.kerbals.Count);
@@ -26,7 +29,7 @@ namespace KerbalStats
 		 * Create a KSKerbal for all the kerbals in our current game, then save them
 		 */
 		private void CreateKerbals() {
-			Debug.Log("Creating brand new kerbals");
+			//Debug.Log("Creating brand new kerbals");
 			this.kerbals = new List<KSKerbal>();
 			foreach (ProtoCrewMember kerbal in HighLogic.CurrentGame.CrewRoster) {
 				this.kerbals.Add(new KSKerbal(kerbal));

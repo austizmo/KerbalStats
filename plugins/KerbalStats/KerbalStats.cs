@@ -8,12 +8,15 @@ using Toolbar;
 
 namespace KerbalStats 
 {
+	/** EventArgs continer for state change event */
 	public class StateChangeEventArgs : EventArgs {
 		public DisplayState newState;
 		public String kerbalName;
 	}
-	public enum DisplayState { HIDDEN, SELECTOR_ALL, SELECTOR_VESSEL, KERBAL_STATS }
+	/** Event handler for state change event */
 	public delegate void StateChangeHandler(object sender, StateChangeEventArgs e);
+	/** Types of display states used by dialogs */
+	public enum DisplayState { HIDDEN, SELECTOR_ALL, SELECTOR_VESSEL, KERBAL_STATS }
 
 	class KerbalStats 
 	{	
