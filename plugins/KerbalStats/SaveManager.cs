@@ -58,7 +58,7 @@ namespace KerbalStats
 			StreamWriter file = File.CreateText(SAVE_FILE);
 			foreach (KSKerbal kerbal in kerbals)
 			{
-				Debug.Log("Saving Kerbal "+kerbal.name);
+				Debug.Log("Saving Kerbal "+kerbal.name+" with "+kerbal.baseSanity+" sanity");
 				file.WriteLine(kerbal.Serialize());
 			}
 			file.Close();

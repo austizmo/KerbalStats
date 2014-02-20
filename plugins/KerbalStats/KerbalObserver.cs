@@ -16,14 +16,16 @@ namespace KerbalStats
 		}
 
 		private void OnVesselRecovered(ProtoVessel vessel) {
-			List<KSKerbal> crew = this.model.GetKerbals(vessel.vesselRef);
-			foreach(KSKerbal kerbal in crew) {
+			Debug.Log("OnVesselRecovered");
+			foreach(KSKerbal kerbal in this.model.GetKerbals(vessel.vesselRef)) {
 				kerbal.OnMissionComplete();
 			}
+			Debug.Log("After OnVesselRecovered");
 		}
 
 		private void OnLaunch(EventReport report)
 		{
+			Debug.Log("on launch triggered");
 			Vessel vessel = FlightGlobals.ActiveVessel;
 			if(vessel!=null) {
 				List<KSKerbal> crew = this.model.GetKerbals(vessel);
@@ -35,6 +37,9 @@ namespace KerbalStats
 
 		public void OnDestroy() {
 			this.model = null;
+
+			GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
+			GameEvents.onLaunch.Remove(OnLaunch);
 		}
 	}
 }

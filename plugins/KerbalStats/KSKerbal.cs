@@ -25,7 +25,7 @@ namespace KerbalStats
 		public double currentMissionTime	= 0;
 
 		//True when kerbal is on a mission
-		private bool onDuty = false;
+		public bool onDuty = false;
 
 		/**
 		 * Given a ProtoCrewMember, create a new KSKerbal with default stats
@@ -34,6 +34,7 @@ namespace KerbalStats
 			Debug.Log("Creating new kerbal");
 			this.name 			= kerbal.name;
 			this.baseSanity 	= DetermineBaseSanity();
+			Debug.Log(this.name +" has "+this.baseSanity+" sanity");
 			this.currentSanity 	= this.baseSanity;
 			this.hiredTime 		= Planetarium.GetUniversalTime();
 			this.lastLaunchTime = Planetarium.GetUniversalTime();
@@ -93,7 +94,13 @@ namespace KerbalStats
 		 * Invoked upon successfull completion of a mission, updates timers and counters.
 		 */
 		public void OnMissionComplete() {
-			Debug.Log("on mission complete invoked");
+			Debug.Log("on mission complete invoked for "+this.name);
+			if(!this.onDuty) {
+				//prevent counting mission stats when recovering unlaunched vehicles from the launch pad
+				Debug.Log("Not on duty, not recording mission stats");
+				return;	
+			}
+
 			//set the last return time
 			this.lastReturnTime = Planetarium.GetUniversalTime();
 
