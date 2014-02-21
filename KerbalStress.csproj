@@ -7,8 +7,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7EE453FF-EC28-4B09-940C-B9C1AC3D8DB9}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>KerbalStats</RootNamespace>
-    <AssemblyName>KerbalStats</AssemblyName>
+    <RootNamespace>KerbalStress</RootNamespace>
+    <AssemblyName>KerbalStress</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -56,17 +56,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="plugins\KerbalStats\KerbalObserver.cs" />
-    <Compile Include="plugins\KerbalStats\KerbalStats.cs" />
-    <Compile Include="plugins\KerbalStats\KSKerbal.cs" />
-    <Compile Include="plugins\KerbalStats\KSPAddonFixed.cs" />
-    <Compile Include="plugins\KerbalStats\SaveManager.cs" />
-    <Compile Include="plugins\KerbalStats\StatsModel.cs" />
-    <Compile Include="plugins\KerbalStats\Utils.cs" />
-    <Compile Include="plugins\KerbalStats\dialogs\AbstractWindow.cs" />
-    <Compile Include="plugins\KerbalStats\dialogs\KerbalSelector.cs" />
-    <Compile Include="plugins\KerbalStats\dialogs\StatsWindow.cs" />
-    <Compile Include="plugins\KerbalStats\Properties\AssemblyInfo.cs" />
+    <Compile Include="plugins\KerbalStress\KerbalObserver.cs" />
+    <Compile Include="plugins\KerbalStress\KerbalStress.cs" />
+    <Compile Include="plugins\KerbalStress\KSKerbal.cs" />
+    <Compile Include="plugins\KerbalStress\KSPAddonFixed.cs" />
+    <Compile Include="plugins\KerbalStress\SaveManager.cs" />
+    <Compile Include="plugins\KerbalStress\StatsModel.cs" />
+    <Compile Include="plugins\KerbalStress\Utils.cs" />
+    <Compile Include="plugins\KerbalStress\dialogs\AbstractWindow.cs" />
+    <Compile Include="plugins\KerbalStress\dialogs\KerbalSelector.cs" />
+    <Compile Include="plugins\KerbalStress\dialogs\StatsWindow.cs" />
+    <Compile Include="plugins\KerbalStress\Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

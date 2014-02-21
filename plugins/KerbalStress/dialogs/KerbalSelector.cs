@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace KerbalStats
+namespace KerbalStress
 {
 	class KerbalSelector : AbstractWindow 
 	{

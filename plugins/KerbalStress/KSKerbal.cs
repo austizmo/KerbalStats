@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 using UnityEngine;
 using KSP.IO;
 
-namespace KerbalStats
+namespace KerbalStress
 {
 	/**
 	 * KSKerbal represents a unique kerbal, and contains properties pertaining to its stats, methods for serialization and data access, and methods for updating stats on events. 
@@ -174,7 +174,7 @@ namespace KerbalStats
 			double elapsed = Planetarium.GetUniversalTime() - this.lastStressTest;
 			if(elapsed < 60) return;
 
-			int test = KerbalStats.rng.Next(0,10);
+			int test = KerbalStress.rng.Next(0,10);
 			if(this.CurrentStress > LOW && this.CurrentStress < HIGH) { 
 				if(test >= 5) Debug.Log(this.name+" failed a stress test!"); //50% chance of failure
 			}

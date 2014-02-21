@@ -6,7 +6,7 @@ using System.Linq;
 using UnityEngine;
 using Toolbar;
 
-namespace KerbalStats 
+namespace KerbalStress 
 {
 	/** EventArgs continer for state change event */
 	public class StateChangeEventArgs : EventArgs {
@@ -18,15 +18,15 @@ namespace KerbalStats
 	/** Types of display states used by dialogs */
 	public enum DisplayState { HIDDEN, SELECTOR_ALL, SELECTOR_VESSEL, KERBAL_STATS }
 
-	/** defines scenes in which to start and run kerbalstats */
+	/** defines scenes in which to start and run KerbalStress */
 	[KSPAddonFixed(KSPAddon.Startup.SpaceCentre, false, typeof(StatsAddonSpaceCentre))]
-	public class StatsAddonSpaceCentre : KerbalStats {}
+	public class StatsAddonSpaceCentre : KerbalStress {}
 	[KSPAddonFixed(KSPAddon.Startup.Flight, false, typeof(StatsAddonFlight))]
-	public class StatsAddonFlight : KerbalStats {}
+	public class StatsAddonFlight : KerbalStress {}
 	[KSPAddonFixed(KSPAddon.Startup.EditorAny, false, typeof(StatsAddonEditor))]
-	public class StatsAddonEditor : KerbalStats {}
+	public class StatsAddonEditor : KerbalStress {}
 
-	public class KerbalStats : MonoBehaviour
+	public class KerbalStress : MonoBehaviour
 	{	
 		public static System.Random rng = new System.Random();
 
@@ -41,7 +41,7 @@ namespace KerbalStats
 		private KerbalObserver 	observer;
 		private StatsModel 		model;	
 
-		public KerbalStats() {
+		public KerbalStress() {
 			//Debug.Log("new instance create");
 			this.model 		= new StatsModel();
 			this.observer 	= new KerbalObserver(this.model);
@@ -135,11 +135,11 @@ namespace KerbalStats
 			button = ToolbarManager.Instance.add("KerbalsStats", "button");
             if (button != null)
             {
-            	button_on  = "KerbalStats/Resource/button_on";
-				button_off = "KerbalStats/Resource/button_off";
+            	button_on  = "KerbalStress/Resource/button_on";
+				button_off = "KerbalStress/Resource/button_off";
 
 				button.TexturePath 	= button_off;
-				button.ToolTip 		= "View KerbalStats";
+				button.ToolTip 		= "View KerbalStress";
 				button.OnClick += (e) => {	OnToolbarClick();	};
 
 				button.Visibility = new GameScenesVisibility(GameScenes.EDITOR, GameScenes.SPH, GameScenes.FLIGHT, GameScenes.SPACECENTER);
@@ -160,7 +160,7 @@ namespace KerbalStats
 		}
 
 		public void OnDestroy() {
-			//Debug.Log("KerbalStats OnDestroy");
+			//Debug.Log("KerbalStress OnDestroy");
 			this.observer.OnDestroy();
 			this.model.OnDestroy();
 			this.observer = null;

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using KSP.IO;
 
-namespace KerbalStats
+namespace KerbalStress
 {
 	public abstract class AbstractWindow
 	{

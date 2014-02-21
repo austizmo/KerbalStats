@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using System.IO;
 using UnityEngine;
 
-namespace KerbalStats
+namespace KerbalStress
 {
 	/**
 	 * Handles saving and loading of Kerbal data to disk
@@ -24,7 +24,7 @@ namespace KerbalStats
 		public static List<KSKerbal> LoadKerbals() {
 			//Debug.Log("Loading Kerbals from disk");
 			List<KSKerbal> kerbals = new List<KSKerbal>();
-			XmlSerializer xmlSerializer = new XmlSerializer(Type.GetType("KerbalStats.KSKerbal"));
+			XmlSerializer xmlSerializer = new XmlSerializer(Type.GetType("KerbalStress.KSKerbal"));
 			StreamReader file = null;
 			try {
 				if(!File.Exists(SAVE_FILE)) {

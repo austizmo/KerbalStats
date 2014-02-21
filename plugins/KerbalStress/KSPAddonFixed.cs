@@ -6,7 +6,7 @@ using System.Text;
 /// <summary>
 /// KSPAddon with equality checking using an additional type parameter. Fixes the issue where AddonLoader prevents multiple start-once addons with the same start scene.
 /// </summary>
-namespace KerbalStats 
+namespace KerbalStress 
 {
 	public class KSPAddonFixed : KSPAddon, IEquatable<KSPAddonFixed>
 	{
