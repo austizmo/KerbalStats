@@ -7,7 +7,6 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7EE453FF-EC28-4B09-940C-B9C1AC3D8DB9}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>KerbalStats</RootNamespace>
     <AssemblyName>KerbalStats</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -20,13 +19,13 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <ConsolePause>False</ConsolePause>
     <CustomCommands>
       <CustomCommands>
         <Command type="AfterBuild" command="build.bat" pauseExternalConsole="True" />
         <Command type="AfterBuild" command="..\..\..\ksp_dev\KSP.exe" pauseExternalConsole="True" />
       </CustomCommands>
     </CustomCommands>
+    <ConsolePause>False</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -56,14 +55,12 @@
       <HintPath>..\..\..\ksp_dev\GameData\000_Toolbar\Toolbar.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Compile Include="plugins\KerbalStats\KerbalObserver.cs" />
     <Compile Include="plugins\KerbalStats\KerbalStats.cs" />
     <Compile Include="plugins\KerbalStats\KSKerbal.cs" />
     <Compile Include="plugins\KerbalStats\KSPAddonFixed.cs" />
     <Compile Include="plugins\KerbalStats\SaveManager.cs" />
-    <Compile Include="plugins\KerbalStats\StatsAddon.cs" />
     <Compile Include="plugins\KerbalStats\StatsModel.cs" />
     <Compile Include="plugins\KerbalStats\Utils.cs" />
     <Compile Include="plugins\KerbalStats\dialogs\AbstractWindow.cs" />
@@ -71,7 +68,5 @@
     <Compile Include="plugins\KerbalStats\dialogs\StatsWindow.cs" />
     <Compile Include="plugins\KerbalStats\Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="plugins\KerbalStats\KerbalStats.csproj" />
-  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -38,10 +38,12 @@ namespace KerbalStats
 		}
 
 		public List<KSKerbal> GetKerbals() {
+			//Debug.Log("getting kerbals all");
 			return this.kerbals;
 		}
 
 		public List<KSKerbal> GetKerbals(Vessel vessel) {
+			//Debug.Log("getting kerbals vessel");
 			List<KSKerbal> crew = new List<KSKerbal>();
 			foreach(ProtoCrewMember crewMember in vessel.GetVesselCrew()) {
 				KSKerbal kerbal = GetKerbal(crewMember.name);
@@ -51,6 +53,7 @@ namespace KerbalStats
 		}
 
 		public KSKerbal GetKerbal(String name) {
+			//Debug.Log("getting kerbal");
 			foreach(KSKerbal kerbal in this.kerbals) {
 				if(kerbal.name == name) {
 					return kerbal;

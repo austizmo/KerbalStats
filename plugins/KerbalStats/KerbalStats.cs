@@ -18,7 +18,15 @@ namespace KerbalStats
 	/** Types of display states used by dialogs */
 	public enum DisplayState { HIDDEN, SELECTOR_ALL, SELECTOR_VESSEL, KERBAL_STATS }
 
-	class KerbalStats 
+	/** defines scenes in which to start and run kerbalstats */
+	[KSPAddonFixed(KSPAddon.Startup.SpaceCentre, false, typeof(StatsAddonSpaceCentre))]
+	public class StatsAddonSpaceCentre : KerbalStats {}
+	[KSPAddonFixed(KSPAddon.Startup.Flight, false, typeof(StatsAddonFlight))]
+	public class StatsAddonFlight : KerbalStats {}
+	[KSPAddonFixed(KSPAddon.Startup.EditorAny, false, typeof(StatsAddonEditor))]
+	public class StatsAddonEditor : KerbalStats {}
+
+	public class KerbalStats : MonoBehaviour
 	{	
 		public static System.Random rng = new System.Random();
 
@@ -34,12 +42,22 @@ namespace KerbalStats
 		private StatsModel 		model;	
 
 		public KerbalStats() {
+			//Debug.Log("new instance create");
 			this.model 		= new StatsModel();
 			this.observer 	= new KerbalObserver(this.model);
+		}
 
+		public void Start() {
 			if(HighLogic.CurrentGame != null) {
 				CreateWindow();
 				AddToolbarButton();
+			}
+			InvokeRepeating("RunKerbalCheckup", 1, 1);
+		}
+
+		public void RunKerbalCheckup() {
+			foreach(KSKerbal kerbal in this.model.GetKerbals()) {
+				kerbal.Checkup();
 			}
 		}
 
@@ -61,7 +79,7 @@ namespace KerbalStats
 		}
 
 		private void CreateWindow() {
-			Debug.Log("creating window");
+			//Debug.Log("creating window");
 			switch(this.State) {
 				case DisplayState.SELECTOR_ALL:
 					this.window = new KerbalSelector(model.GetKerbals());
@@ -80,22 +98,22 @@ namespace KerbalStats
 		}
 
 		private void OnStateChange(object sender, StateChangeEventArgs e) {
-			Debug.Log("Got state change event. new state: " + e.newState.ToString());
+			//Debug.Log("Got state change event. new state: " + e.newState.ToString());
 			this.window.SetVisible(false);
 			this.state = e.newState;
 			switch(e.newState) {
 				case DisplayState.SELECTOR_VESSEL:
-					Debug.Log("state change to vessel");
+					//Debug.Log("state change to vessel");
 					this.window = new KerbalSelector(model.GetKerbals(FlightGlobals.ActiveVessel));
 					break;
 				case DisplayState.KERBAL_STATS:
-					Debug.Log("state change to stats");
+					//Debug.Log("state change to stats");
 					this.window = new StatsWindow(model.GetKerbal(e.kerbalName));
 				break;
 				case DisplayState.HIDDEN: //fallthrough to all selector
 				case DisplayState.SELECTOR_ALL:
 				default:
-					Debug.Log("state change to selector");
+					//Debug.Log("state change to selector");
 					this.window = new KerbalSelector(model.GetKerbals());
 					break;
 			}
@@ -104,7 +122,7 @@ namespace KerbalStats
 		}
 
 		private void AddToolbarButton() {
-			Debug.Log("adding toolbar button");
+			//Debug.Log("adding toolbar button");
 			button = ToolbarManager.Instance.add("KerbalsStats", "button");
             if (button != null)
             {
@@ -133,7 +151,7 @@ namespace KerbalStats
 		}
 
 		public void OnDestroy() {
-			Debug.Log("KerbalStats.cs OnDestroy()");
+			//Debug.Log("KerbalStats OnDestroy");
 			this.observer.OnDestroy();
 			this.model.OnDestroy();
 			this.observer = null;

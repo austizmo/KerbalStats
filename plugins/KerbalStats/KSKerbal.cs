@@ -7,20 +7,17 @@ using KSP.IO;
 
 namespace KerbalStats
 {
-	/** types of sanity degredation triggers */
-	public enum SanityTriggers { MISSION_TIME, COLLISION, DISTANCE, KERBAL_DEATH, BEDLAM, SOLITUDE }
-
 	/**
 	 * KSKerbal represents a unique kerbal, and contains properties pertaining to its stats, methods for serialization and data access, and methods for updating stats on events. 
 	 */
-	class KSKerbal
+	public class KSKerbal
 	{
 		//used as a unique identifier for this kerbal
 		public String name;
 
 		//stat values
-		public int baseSanity;
-		public int currentSanity;
+		public double baseSanity;
+		public double currentSanity;
 		public double hiredTime;
 		public double lastLaunchTime;
 		public double lastReturnTime;
@@ -29,6 +26,9 @@ namespace KerbalStats
 
 		//True when kerbal is on a mission
 		public bool onDuty = false;
+		public bool insane = false;
+
+		public double lastCheckup;
 
 		/**
 		 * Given a ProtoCrewMember, create a new KSKerbal with default stats
@@ -41,6 +41,7 @@ namespace KerbalStats
 			this.hiredTime 		= Planetarium.GetUniversalTime();
 			this.lastLaunchTime = Planetarium.GetUniversalTime();
 			this.lastReturnTime = Planetarium.GetUniversalTime();
+			this.lastCheckup 	= Planetarium.GetUniversalTime ();
 		}
 
 		/**
@@ -62,24 +63,53 @@ namespace KerbalStats
 		 * Determines the kerbals max sanity stat
 		 * called once when creating a kerbal for the first time
 		 */
-		private int DetermineBaseSanity() {
-			return KerbalStats.rng.Next(70,100);
+		private double DetermineBaseSanity() {
+			return (double)KerbalStats.rng.Next(70,100);
 		}
 
 		/**
 		 * Detracts from the sanity stat based on a trigger
 		 */
-		private void DegradeSanity(SanityTriggers trigger) {
-			switch(trigger) {
-				case SanityTriggers.MISSION_TIME:
-				case SanityTriggers.COLLISION:
-				case SanityTriggers.DISTANCE:
-				case SanityTriggers.KERBAL_DEATH:
-				case SanityTriggers.BEDLAM:
-				case SanityTriggers.SOLITUDE:
-				default:
-					break;
+		private void DegradeSanity() {
+			double elapsedSeconds = Planetarium.GetUniversalTime() - this.lastCheckup;
+			Debug.Log("DegradeSanity elapsedSeconds "+elapsedSeconds);
+			if(this.currentSanity > 0) {
+				this.currentSanity -= (this.baseSanity * 0.001)*elapsedSeconds;
 			}
+			if(this.currentSanity <= (0.1 * this.baseSanity)) {
+				this.GoInsane();
+			}
+		}
+
+		private void RestoreSanity() {
+			double elapsedSeconds = Planetarium.GetUniversalTime() - this.lastCheckup;
+			if(this.currentSanity < this.baseSanity) {
+					this.currentSanity += (this.baseSanity * 0.1)*elapsedSeconds;
+			}
+			else {
+				this.BecomeSane();
+			}
+		}
+
+		private void GoInsane() {
+			if(this.insane) return;
+			Debug.Log("go crazy!");
+			this.insane = true;
+		}
+
+		private void BecomeSane() {
+			if(!this.insane) return;
+			Debug.Log("uncrazy!");
+			this.insane = false;
+		}
+
+		public void Checkup() {
+			if(this.onDuty) {
+				this.DegradeSanity();
+			} else {
+				this.RestoreSanity();
+			}
+			this.lastCheckup = Planetarium.GetUniversalTime();
 		}
 
 		/**
@@ -127,7 +157,7 @@ namespace KerbalStats
 			this.currentMissionTime = 0;
 
 			//remove from duty
-			this.onDuty = false;
+			this.onDuty = false; 
 		}
 
 		/**
