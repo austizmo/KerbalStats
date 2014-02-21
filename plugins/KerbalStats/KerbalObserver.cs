@@ -18,17 +18,19 @@ namespace KerbalStats
 
 			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
 			GameEvents.onLaunch.Add(OnLaunch);
+			GameEvents.onGameStateSaved.Add(OnGameSaved);
 		}
 
 		private void OnVesselRecovered(ProtoVessel vessel) {
 			Debug.Log("OnVesselRecovered");
-			foreach(KSKerbal kerbal in this.model.GetKerbals(vessel.vesselRef)) {
-				kerbal.OnMissionComplete();
+			if(vessel != null && vessel.vesselRef != null) {
+				foreach(KSKerbal kerbal in this.model.GetKerbals(vessel.vesselRef)) {
+					kerbal.OnMissionComplete();
+				}
 			}
 		}
 
-		private void OnLaunch(EventReport report)
-		{
+		private void OnLaunch(EventReport report) {
 			Debug.Log("on launch triggered");
 			Vessel vessel = FlightGlobals.ActiveVessel;
 			if(vessel!=null) {
@@ -39,11 +41,17 @@ namespace KerbalStats
 			}
 		}
 
+		private void OnGameSaved(Game game) {
+			Debug.Log("on game saved");
+			SaveManager.SaveKerbals(this.model.GetKerbals());
+		}
+
 		public void OnDestroy() {
 			this.model = null;
 
 			GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
 			GameEvents.onLaunch.Remove(OnLaunch);
+			GameEvents.onGameStateSaved.Remove(OnGameSaved);
 		}
 	}
 }

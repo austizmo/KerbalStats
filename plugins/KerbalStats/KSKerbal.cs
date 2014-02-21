@@ -15,20 +15,33 @@ namespace KerbalStats
 		//used as a unique identifier for this kerbal
 		public String name;
 
-		//stat values
-		public double baseSanity;
-		public double currentSanity;
-		public double hiredTime;
+		//stress info
+		public const int BASE_STRESS 		= 0;
+		public const int MAX_CURRENT_STRESS = 1;
+		public const int MIN_CURRENT_STRESS	= -1;
+		public const int STRESS_BREAKPOINT 	= 100;
+
+		//stress level breakpoints
+		public const double LOW = .4;
+		public const double HIGH = .8;
+
+		//stress stats
+		public double currentStress; 
+		public double cumulativeStress;
+
+		//stress modifiers
+		public double vesselModifier;
+
+		//timer values
 		public double lastLaunchTime;
 		public double lastReturnTime;
-		public double totalMissionTime		= 0;
 		public double currentMissionTime	= 0;
 
 		//True when kerbal is on a mission
 		public bool onDuty = false;
-		public bool insane = false;
 
 		public double lastCheckup;
+		public double lastStressTest;
 
 		/**
 		 * Given a ProtoCrewMember, create a new KSKerbal with default stats
@@ -36,12 +49,11 @@ namespace KerbalStats
 		public KSKerbal(ProtoCrewMember kerbal) {
 			//Debug.Log("Creating new kerbal");
 			this.name 			= kerbal.name;
-			this.baseSanity 	= DetermineBaseSanity();
-			this.currentSanity 	= this.baseSanity;
-			this.hiredTime 		= Planetarium.GetUniversalTime();
+
 			this.lastLaunchTime = Planetarium.GetUniversalTime();
 			this.lastReturnTime = Planetarium.GetUniversalTime();
-			this.lastCheckup 	= Planetarium.GetUniversalTime ();
+			this.lastCheckup 	= Planetarium.GetUniversalTime();
+			this.lastStressTest = Planetarium.GetUniversalTime();
 		}
 
 		/**
@@ -60,55 +72,33 @@ namespace KerbalStats
 		}
 
 		/**
-		 * Determines the kerbals max sanity stat
-		 * called once when creating a kerbal for the first time
+		 * represents the amount of stress added to the cumulative stress stat at each checkup
 		 */
-		private double DetermineBaseSanity() {
-			return (double)KerbalStats.rng.Next(70,100);
-		}
-
-		/**
-		 * Detracts from the sanity stat based on a trigger
-		 */
-		private void DegradeSanity() {
-			double elapsedSeconds = Planetarium.GetUniversalTime() - this.lastCheckup;
-			Debug.Log("DegradeSanity elapsedSeconds "+elapsedSeconds);
-			if(this.currentSanity > 0) {
-				this.currentSanity -= (this.baseSanity * 0.001)*elapsedSeconds;
-			}
-			if(this.currentSanity <= (0.1 * this.baseSanity)) {
-				this.GoInsane();
+		public double CurrentStress {
+			get {
+				double stress;
+				if(this.onDuty) {
+					stress = MAX_CURRENT_STRESS * .01;
+				} else {
+					stress = MAX_CURRENT_STRESS * -.01;
+				}
+				this.currentStress = stress + vesselModifier;
+				return this.currentStress;
 			}
 		}
 
-		private void RestoreSanity() {
-			double elapsedSeconds = Planetarium.GetUniversalTime() - this.lastCheckup;
-			if(this.currentSanity < this.baseSanity) {
-					this.currentSanity += (this.baseSanity * 0.1)*elapsedSeconds;
-			}
-			else {
-				this.BecomeSane();
-			}
-		}
+		public void Checkup(bool activeCheck = false) {
+			if(activeCheck) this.vesselModifier = CalculateVesselStressMod();
 
-		private void GoInsane() {
-			if(this.insane) return;
-			Debug.Log("go crazy!");
-			this.insane = true;
-		}
+			double elapsed = Planetarium.GetUniversalTime() - this.lastCheckup;
 
-		private void BecomeSane() {
-			if(!this.insane) return;
-			Debug.Log("uncrazy!");
-			this.insane = false;
-		}
+			this.cumulativeStress += this.CurrentStress * elapsed;
 
-		public void Checkup() {
-			if(this.onDuty) {
-				this.DegradeSanity();
-			} else {
-				this.RestoreSanity();
+			if(this.cumulativeStress < BASE_STRESS) this.cumulativeStress = BASE_STRESS;
+			if(this.cumulativeStress >= STRESS_BREAKPOINT) {
+				OnStressTest();
 			}
+
 			this.lastCheckup = Planetarium.GetUniversalTime();
 		}
 
@@ -117,8 +107,8 @@ namespace KerbalStats
 		 * Returns a string of the kerbal's stats, formatted for use in the stats window
 		 */
 		public String PrintStats() {
-			String stats = "Sanity: \t" + this.currentSanity.ToString() + "/" + this.baseSanity.ToString() + "\n";
-			stats += "Total Mission Time: \t" + this.totalMissionTime + "\n";
+			String stats = "Stress Level: \t" + this.CurrentStress + "\n";
+			stats += "Cumulative Stress: \t" + this.cumulativeStress + "\n";
 			if(this.onDuty) {
 				stats += "Time on Current Mission: \t" + this.CurrentMissionTime + "\n";
 			} else {
@@ -134,6 +124,7 @@ namespace KerbalStats
 			Debug.Log("on mission begin invoked");
 			this.onDuty = true;
 			this.lastLaunchTime = Planetarium.GetUniversalTime();
+			this.vesselModifier = CalculateVesselStressMod();
 		}
 
 		/**
@@ -149,15 +140,12 @@ namespace KerbalStats
 
 			//set the last return time
 			this.lastReturnTime = Planetarium.GetUniversalTime();
-
-			//add to the total mission time
-			this.totalMissionTime += this.lastReturnTime - this.lastLaunchTime;
-
 			//reset current mission time
 			this.currentMissionTime = 0;
-
 			//remove from duty
 			this.onDuty = false; 
+			//reset stress mod
+			this.vesselModifier = 0;
 		}
 
 		/**
@@ -170,6 +158,31 @@ namespace KerbalStats
 			xmlSerializer.Serialize(textWriter, this);
 			textWriter.Close();
 			return textWriter.ToString();
+		}
+
+		private double CalculateVesselStressMod() {
+			Vessel vessel 	= FlightGlobals.ActiveVessel;
+			double gForce 	= vessel.geeForce;
+			int maxCrew 	= vessel.GetCrewCapacity();
+			int totalCrew 	= vessel.GetCrewCount();
+			return 0.01;
+		}
+
+		private void OnStressTest() {
+			if(this.CurrentStress <= LOW) return;
+
+			double elapsed = Planetarium.GetUniversalTime() - this.lastStressTest;
+			if(elapsed < 60) return;
+
+			int test = KerbalStats.rng.Next(0,10);
+			if(this.CurrentStress > LOW && this.CurrentStress < HIGH) { 
+				if(test >= 5) Debug.Log(this.name+" failed a stress test!"); //50% chance of failure
+			}
+			if(this.CurrentStress >= HIGH) { 
+				if(test >= 2) Debug.Log(this.name+" failed a stress test!"); //80% chance of failure
+			}
+
+			this.lastStressTest = Planetarium.GetUniversalTime();
 		}
 	}
 }

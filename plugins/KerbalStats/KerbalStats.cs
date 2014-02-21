@@ -52,12 +52,21 @@ namespace KerbalStats
 				CreateWindow();
 				AddToolbarButton();
 			}
-			InvokeRepeating("RunKerbalCheckup", 1, 1);
+			InvokeRepeating("RunActiveKerbalCheckup", 1, 1);
+			InvokeRepeating("RunFullKerbalCheckup", 1, 30);
 		}
 
-		public void RunKerbalCheckup() {
+		public void RunFullKerbalCheckup() {
 			foreach(KSKerbal kerbal in this.model.GetKerbals()) {
 				kerbal.Checkup();
+			}
+		}
+
+		public void RunActiveKerbalCheckup() {
+			if(HighLogic.LoadedScene == GameScenes.FLIGHT) {
+				foreach(KSKerbal kerbal in model.GetKerbals(FlightGlobals.ActiveVessel)) {
+					kerbal.Checkup(true);
+				}
 			}
 		}
 

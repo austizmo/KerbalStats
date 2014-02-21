@@ -63,7 +63,6 @@ namespace KerbalStats
 		}
 
 		public void OnDestroy() {
-			SaveManager.SaveKerbals(this.kerbals);
 			this.kerbals = null;
 		}
 	}
