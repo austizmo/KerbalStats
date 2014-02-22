@@ -14,12 +14,28 @@ namespace KerbalStress
 	{
 		//used as a unique identifier for this kerbal
 		public String name;
+		public double courage;
+		public double stupidity;
+		public bool isBadass;
+		public int breakpoint;
 
 		//stress info
 		public const int BASE_STRESS 		= 0;
 		public const int MAX_CURRENT_STRESS = 1;
 		public const int MIN_CURRENT_STRESS	= -1;
-		public const int STRESS_BREAKPOINT 	= 100;
+
+		public const int MAX_STRESS_BREAKPOINT 	= 1000;
+
+		//stressor levels
+		public const double BASE_MISSION_STRESS = 0.1;
+		public const double BASE_REST_STRESS 	= -0.1;
+		public const double LOW_G_STRESS 		= 0.1;
+		public const double MED_G_STRESS		= 0.2;
+		public const double HIGH_G_STRESS		= 0.5;
+
+		public const double BASE_VESSEL_STRESS 	= 0;
+		public const double FULL_VESSEL_STRESS	= .1;
+
 
 		//stress level breakpoints
 		public const double LOW = .4;
@@ -29,13 +45,9 @@ namespace KerbalStress
 		public double currentStress; 
 		public double cumulativeStress;
 
-		//stress modifiers
-		public double vesselModifier;
-
 		//timer values
 		public double lastLaunchTime;
 		public double lastReturnTime;
-		public double currentMissionTime	= 0;
 
 		//True when kerbal is on a mission
 		public bool onDuty = false;
@@ -49,9 +61,12 @@ namespace KerbalStress
 		public KSKerbal(ProtoCrewMember kerbal) {
 			//Debug.Log("Creating new kerbal");
 			this.name 			= kerbal.name;
+			this.courage		= kerbal.courage;
+			this.stupidity		= kerbal.stupidity;
+			this.isBadass		= kerbal.isBadass;
 
-			this.lastLaunchTime = Planetarium.GetUniversalTime();
-			this.lastReturnTime = Planetarium.GetUniversalTime();
+			this.breakpoint 	= CalculateBreakpoint();
+
 			this.lastCheckup 	= Planetarium.GetUniversalTime();
 			this.lastStressTest = Planetarium.GetUniversalTime();
 		}
@@ -61,41 +76,17 @@ namespace KerbalStress
 		 */
 		public KSKerbal() {}
 
-		/**
-		 * Returns the elapsed time for the Kerbal's current mission
-		 */
-		public double CurrentMissionTime {
-			get {
-				if(!this.onDuty) return 0;
-				return Planetarium.GetUniversalTime() - this.lastLaunchTime;
-			}
-		}
-
-		/**
-		 * represents the amount of stress added to the cumulative stress stat at each checkup
-		 */
-		public double CurrentStress {
-			get {
-				double stress;
-				if(this.onDuty) {
-					stress = MAX_CURRENT_STRESS * .01;
-				} else {
-					stress = MAX_CURRENT_STRESS * -.01;
-				}
-				this.currentStress = stress + vesselModifier;
-				return this.currentStress;
-			}
-		}
-
 		public void Checkup(bool activeCheck = false) {
-			if(activeCheck) this.vesselModifier = CalculateVesselStressMod();
+			Vessel vessel = (activeCheck) ? FlightGlobals.ActiveVessel : null;
 
+			this.currentStress = CalculateStress(vessel);
+			
 			double elapsed = Planetarium.GetUniversalTime() - this.lastCheckup;
 
-			this.cumulativeStress += this.CurrentStress * elapsed;
+			this.cumulativeStress += this.currentStress * elapsed;
 
 			if(this.cumulativeStress < BASE_STRESS) this.cumulativeStress = BASE_STRESS;
-			if(this.cumulativeStress >= STRESS_BREAKPOINT) {
+			if(this.cumulativeStress >= this.breakpoint && this.currentStress > LOW) {
 				OnStressTest();
 			}
 
@@ -103,49 +94,22 @@ namespace KerbalStress
 		}
 
 		/**
-		 * TODO: replace with a better stats screen
-		 * Returns a string of the kerbal's stats, formatted for use in the stats window
-		 */
-		public String PrintStats() {
-			String stats = "Stress Level: \t" + this.CurrentStress + "\n";
-			stats += "Cumulative Stress: \t" + this.cumulativeStress + "\n";
-			if(this.onDuty) {
-				stats += "Time on Current Mission: \t" + this.CurrentMissionTime + "\n";
-			} else {
-				stats += "Time Rested: \t" + (Planetarium.GetUniversalTime() - this.lastReturnTime) + "\n";
-			}
-			return stats;
-		}
-
-		/**
 		 * Invoked when a kerbal begins a mission, updates timers
 		 */
 		public void OnMissionBegin() {
-			Debug.Log("on mission begin invoked");
+			//Debug.Log("on mission begin invoked");
 			this.onDuty = true;
-			this.lastLaunchTime = Planetarium.GetUniversalTime();
-			this.vesselModifier = CalculateVesselStressMod();
 		}
 
 		/**
 		 * Invoked upon successfull completion of a mission, updates timers and counters.
 		 */
 		public void OnMissionComplete() {
-			Debug.Log("on mission complete invoked for "+this.name);
-			if(!this.onDuty) {
-				//prevent counting mission stats when recovering unlaunched vehicles from the launch pad
-				Debug.Log("Not on duty, not recording mission stats");
-				return;	
-			}
-
-			//set the last return time
-			this.lastReturnTime = Planetarium.GetUniversalTime();
-			//reset current mission time
-			this.currentMissionTime = 0;
+			//Debug.Log("on mission complete invoked for "+this.name);
 			//remove from duty
-			this.onDuty = false; 
-			//reset stress mod
-			this.vesselModifier = 0;
+			this.onDuty = false;
+			//reset stress mod 
+			this.currentStress = BASE_REST_STRESS;
 		}
 
 		/**
@@ -160,46 +124,90 @@ namespace KerbalStress
 			return textWriter.ToString();
 		}
 
-		private double CalculateVesselStressMod() {
-			Vessel vessel 	= FlightGlobals.ActiveVessel;
-			double gForce 	= vessel.geeForce;
-			int maxCrew 	= vessel.GetCrewCapacity();
-			int totalCrew 	= vessel.GetCrewCount();
-			return 0.01;
+		/**
+		 * Determines cumulative stress level before Kerbals need to take stress tests
+		 */
+		private int CalculateBreakpoint() {
+			if(this.isBadass) return MAX_STRESS_BREAKPOINT;
+			return (int)(this.courage * MAX_STRESS_BREAKPOINT);
+		}
+
+		private double CalculateStress(Vessel vessel) {
+			//off duty
+			if(!this.onDuty) return BASE_REST_STRESS;
+
+			//on duty with active vessel
+			if(vessel != null) {
+				double stress = GetVesselMod(vessel);
+				stress += GetGLevelMod(vessel);
+
+				return stress;
+			} 
+			//on duty, but not in active vessel
+			else {
+				return this.currentStress;
+			}
 		}
 
 		private void OnStressTest() {
-			if(this.CurrentStress <= LOW) return;
-
 			double elapsed = Planetarium.GetUniversalTime() - this.lastStressTest;
 			if(elapsed < 60) return;
 
 			int test = KerbalStress.rng.Next(0,10);
-			if(this.CurrentStress > LOW && this.CurrentStress < HIGH) { 
-				if(test >= 5) Debug.Log(this.name+" failed a stress test!"); //50% chance of failure
+			if(this.currentStress > LOW && this.currentStress < HIGH) { 
+				if(test >= 5) { //50% chance of failure
+					OnFailStressTest();
+				}
 			}
-			if(this.CurrentStress >= HIGH) { 
-				if(test >= 2) Debug.Log(this.name+" failed a stress test!"); //80% chance of failure
+			if(this.currentStress >= HIGH) { 
+				if(test >= 2) { //80% chance of failure
+					OnFailStressTest();
+				}
 			}
 
 			this.lastStressTest = Planetarium.GetUniversalTime();
 		}
+
+		private void OnFailStressTest() {
+			//do a thing!
+			Debug.Log(this.name+" failed a stress test!");
+		}
+
+		private double GetDockingMod() { return 0; }
+		private double GetDistanceMod() { return 0; }
+		private double GetSolitudeMod() { return 0; }
+		private double GetTimeWithCrewMod() { return 0; }
+		private double GetFlightPathMod() { return 0; } //unstable orbit, impact time, etc
+
+		private double GetGLevelMod(Vessel vessel) {
+			double gForce 	= vessel.geeForce;
+			if(gForce < .65) { //exposure to low g is a major cause of physical and mental stress in the real world
+				return BASE_MISSION_STRESS + LOW_G_STRESS;
+			} else if(gForce >= .65 && gForce <= 1.55) { //if we're around normal g, it's not that stressful
+				return BASE_MISSION_STRESS;
+			} else if(gForce > 1.55 && gForce <= 6) { //medium g, trained individuals in g suits should be able to hand this with little trouble, but not for sustained periods
+				return BASE_MISSION_STRESS + MED_G_STRESS;	
+			} else if(gForce > 6 && gForce <= 9) { //even trained astronauts in g suits have difficulty with this level of g
+				return BASE_MISSION_STRESS + HIGH_G_STRESS;
+			} else { //G > 9 at this level, you're probably unconscious, regardless of who you are
+				return MAX_CURRENT_STRESS;
+			}
+		}
+
+		private double GetVesselMod(Vessel vessel) {
+			int maxCrew 	= vessel.GetCrewCapacity();
+			int totalCrew 	= vessel.GetCrewCount();
+
+			double vesselStress = BASE_VESSEL_STRESS;
+			//no extra space
+			if(totalCrew == maxCrew) {
+				vesselStress += FULL_VESSEL_STRESS;
+			} 
+			return vesselStress;
+		}
+
+		private double GetDeltaVMod() { return 0; }
+		private double GetChargeMod() { return 0; }
 	}
 }
 
-/**
- * STAT IDEAS
- * 
- * distance traveled
- * bodies visited
- * 	- orbits completed
- * 	- times landed
- * 	- steps taken
- * dockings completed
- * flights landed
- * collisions survived
- * explosions survived
- * health
- * happiness
- * 
- */

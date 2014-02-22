@@ -9,11 +9,15 @@ namespace KerbalStress
 		private readonly int 	id;
 		private readonly string title;
 
+		private static readonly int AUTO_HEIGHT = -1;
+		private static readonly int DEFAULT_WIDTH = 400;
+
 		private 	bool 		visible    	= false;
-		protected 	Rect 		bounds   	= new Rect(0,0,600,800);
+		protected 	Rect 		bounds   	= new Rect();
 		protected 	GUIStyle 	windowStyle = new GUIStyle(HighLogic.Skin.window);
 		protected	GUIStyle	buttonStyle	= new GUIStyle(HighLogic.Skin.button);
 		protected 	GUIStyle 	scrollStyle = new GUIStyle(HighLogic.Skin.scrollView);
+		protected	GUIStyle	labelStyle	= new GUIStyle(HighLogic.Skin.label);
 
 		public abstract event StateChangeHandler Changed;
 		
@@ -22,9 +26,17 @@ namespace KerbalStress
 			this.title  = title;
 
 			try {
-			RenderingManager.AddToPostDrawQueue(0, OnDraw);
+				RenderingManager.AddToPostDrawQueue(0, OnDraw);
 			} 
 			catch {}
+		}
+
+		protected virtual int GetWidth() {
+			return DEFAULT_WIDTH;
+		}
+
+		protected virtual int GetHeight() {
+			return AUTO_HEIGHT;
 		}
 
 		protected virtual void OnOpen() {}
@@ -35,7 +47,11 @@ namespace KerbalStress
 
 		private void OnDraw() {
 			if (this.visible) {
-				bounds = GUILayout.Window(id, bounds, OnWindowInternal, title, this.windowStyle);
+				if(GetHeight()==AUTO_HEIGHT) {
+					bounds = GUILayout.Window(id, bounds, OnWindowInternal, title, this.windowStyle, GUILayout.Width(GetWidth()));
+				} else {
+					bounds = GUILayout.Window(id, bounds, OnWindowInternal, title, this.windowStyle, GUILayout.Width(GetWidth()), GUILayout.Height(GetHeight()));
+				}
 			}
 		}
 
@@ -57,6 +73,20 @@ namespace KerbalStress
 
 		public bool IsVisible() {
 			return this.visible;
+		}
+
+		public static Texture2D GetTexture(String path) {
+			GameDatabase.TextureInfo ti = GameDatabase.Instance.GetTextureInfo(path);
+			if(ti!=null) {
+				return ti.texture;
+			}
+			else {
+				return null;
+			}
+		}
+
+		protected void OnDestroy() {
+			RenderingManager.RemoveFromPostDrawQueue(0, OnDraw);
 		}
 	}
 }

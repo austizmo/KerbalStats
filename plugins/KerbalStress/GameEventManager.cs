@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace KerbalStress
 {
-	class KerbalObserver
+	class GameEventManager
 	{
 		private StatsModel model;
 
@@ -13,7 +13,7 @@ namespace KerbalStress
 		 *
 		 * Takes a StatsModel instance, for access to Kerbals
 		 */
-		public KerbalObserver(StatsModel model) {
+		public GameEventManager(ref StatsModel model) {
 			this.model = model;
 
 			GameEvents.onVesselRecovered.Add(OnVesselRecovered);

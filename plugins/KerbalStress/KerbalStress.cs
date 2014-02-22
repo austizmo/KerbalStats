@@ -5,7 +5,7 @@ using System.Text;
 using System.Linq;
 using UnityEngine;
 using Toolbar;
-
+ 
 namespace KerbalStress 
 {
 	/** EventArgs continer for state change event */
@@ -16,7 +16,7 @@ namespace KerbalStress
 	/** Event handler for state change event */
 	public delegate void StateChangeHandler(object sender, StateChangeEventArgs e);
 	/** Types of display states used by dialogs */
-	public enum DisplayState { HIDDEN, SELECTOR_ALL, SELECTOR_VESSEL, KERBAL_STATS }
+	public enum DisplayState { HIDDEN, SELECTOR_ALL, SELECTOR_VESSEL }
 
 	/** defines scenes in which to start and run KerbalStress */
 	[KSPAddonFixed(KSPAddon.Startup.SpaceCentre, false, typeof(StatsAddonSpaceCentre))]
@@ -36,17 +36,17 @@ namespace KerbalStress
 
 		private AbstractWindow window;
 
-		private DisplayState state = DisplayState.HIDDEN;
+		private DisplayState state;
 
-		private KerbalObserver 	observer;
-		private StatsModel 		model;	
+		private GameEventManager 	eventManager;
+		private StatsModel 			model;	
 
 		public KerbalStress() {
 			//Debug.Log("new instance create");
-			this.model 		= new StatsModel();
-			this.observer 	= new KerbalObserver(this.model);
+			this.model 			= new StatsModel();
+			this.eventManager 	= new GameEventManager(ref this.model);
 		}
-
+ 
 		public void Start() {
 			if(HighLogic.CurrentGame != null) {
 				CreateWindow();
@@ -70,38 +70,12 @@ namespace KerbalStress
 			}
 		}
 
-		private DisplayState State {
-			get {
-				if(this.state == DisplayState.HIDDEN) {
-					if(HighLogic.LoadedScene == GameScenes.FLIGHT) {
-						if(FlightGlobals.ActiveVessel.isEVA) {
-							this.state = DisplayState.KERBAL_STATS;
-						} else {
-							this.state = DisplayState.SELECTOR_VESSEL;
-						}
-					} else {
-						this.state = DisplayState.SELECTOR_ALL;
-					}
-				}
-				return this.state;
-			}
-		}
-
 		private void CreateWindow() {
 			//Debug.Log("creating window");
-			switch(this.State) {
-				case DisplayState.SELECTOR_ALL:
-					this.window = new KerbalSelector(model.GetKerbals());
-					break;
-				case DisplayState.SELECTOR_VESSEL:
-					this.window = new KerbalSelector(model.GetKerbals(FlightGlobals.ActiveVessel));
-					break;
-				case DisplayState.KERBAL_STATS:
-					List<ProtoCrewMember> crew = FlightGlobals.ActiveVessel.GetVesselCrew();
-					if(crew.Count == 1) {
-						this.window = new StatsWindow(model.GetKerbal(crew[0].name));
-					}
-					break;
+			if(HighLogic.LoadedScene == GameScenes.FLIGHT) {
+				this.window = new KerbalSelector(model.GetKerbals(FlightGlobals.ActiveVessel));
+			} else {
+				this.window = new KerbalSelector(model.GetKerbals());			
 			}
 			this.window.Changed += new StateChangeHandler(OnStateChange);
 		}
@@ -110,24 +84,24 @@ namespace KerbalStress
 			//Debug.Log("Got state change event. new state: " + e.newState.ToString());
 			this.window.SetVisible(false);
 			this.state = e.newState;
+
 			switch(e.newState) {
+				case DisplayState.HIDDEN:
+					this.button.TexturePath = button_off;
+					return;
 				case DisplayState.SELECTOR_VESSEL:
 					//Debug.Log("state change to vessel");
 					this.window = new KerbalSelector(model.GetKerbals(FlightGlobals.ActiveVessel));
 					break;
-				case DisplayState.KERBAL_STATS:
-					//Debug.Log("state change to stats");
-					this.window = new StatsWindow(model.GetKerbal(e.kerbalName));
-				break;
-				case DisplayState.HIDDEN: //fallthrough to all selector
 				case DisplayState.SELECTOR_ALL:
 				default:
 					//Debug.Log("state change to selector");
 					this.window = new KerbalSelector(model.GetKerbals());
 					break;
 			}
-			if(e.newState != DisplayState.HIDDEN) this.window.SetVisible(true);
+
 			this.window.Changed += new StateChangeHandler(OnStateChange);
+			this.window.SetVisible(true);
 		}
 
 		private void AddToolbarButton() {
@@ -161,10 +135,33 @@ namespace KerbalStress
 
 		public void OnDestroy() {
 			//Debug.Log("KerbalStress OnDestroy");
-			this.observer.OnDestroy();
+			this.eventManager.OnDestroy();
 			this.model.OnDestroy();
-			this.observer = null;
+			this.eventManager = null;
 			this.model = null;
+			this.window = null;
 		}
 	}
+
+	[KSPAddon(KSPAddon.Startup.MainMenu, false)]
+    public class Debug_AutoLoadPersistentSaveOnStartup : MonoBehaviour
+    {
+        //use this variable for first run to avoid the issue with when this is true and multiple addons use it
+        public static bool first = true;
+        public void Start()
+        {
+            //only do it on the first entry to the menu
+            if (first)
+            {
+                first = false;
+                HighLogic.SaveFolder = "default";
+                var game = GamePersistence.LoadGame("persistent", HighLogic.SaveFolder, true, false);
+                if (game != null && game.flightState != null && game.compatible)
+                {
+                    FlightDriver.StartAndFocusVessel(game, 0);
+                }
+                //CheatOptions.InfiniteFuel = true;
+            }
+        }
+    }
 }

@@ -12,25 +12,61 @@ namespace KerbalStress
 
 		public override event StateChangeHandler Changed;
 
-		public KerbalSelector(List<KSKerbal> kerbals) : base(1185, "Kerbal Stats: Kerbal Selector") {
+		private GUIStyle ListEntryArea;
+		private GUIStyle StatsDisplay;
+		private GUIStyle MoreInfoButton;
+
+		//textures
+		private Texture2D more_info;
+
+		private String selectedKerbal = "";
+
+		public KerbalSelector(List<KSKerbal> kerbals) : base(1185, "Kerbal Stress: Kerbal Selector") {
 			this.kerbals = kerbals;
+
+			this.ListEntryArea = new GUIStyle(this.buttonStyle);
+			this.ListEntryArea.fixedHeight = 65;
+			this.ListEntryArea.onHover = this.ListEntryArea.onNormal;
+
+			this.StatsDisplay = new GUIStyle(HighLogic.Skin.box);
+			//this.StatsDisplay.fixedHeight = 35;
+			this.StatsDisplay.fixedWidth = 210;
+
+			this.MoreInfoButton = new GUIStyle(this.buttonStyle);
+			this.MoreInfoButton.fixedHeight = 65;
+			this.MoreInfoButton.fixedWidth = 24;
 		}
 
 		protected override void OnWindow(int id) {
-			GUILayout.BeginVertical(this.windowStyle);
-				GUILayout.Label("Kerbal Selector Window!");
-				this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, this.scrollStyle);
-				foreach(KSKerbal kerbal in kerbals) {
-					GUILayout.BeginHorizontal();
-						GUILayout.Label(kerbal.name);
-						if(GUILayout.Button("View Stats")) {
-							OnStateChange(DisplayState.KERBAL_STATS, kerbal.name);
-						}
+			this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, this.scrollStyle, GUILayout.Height(444));
+			this.more_info = AbstractWindow.GetTexture("KerbalStress/Resource/more_info");
+			foreach(KSKerbal kerbal in kerbals) {
+				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(this.ListEntryArea);
+					GUILayout.Label(kerbal.name, this.labelStyle);
+					GUILayout.BeginHorizontal(this.StatsDisplay);
+						GUILayout.BeginVertical();
+							GUILayout.Label("Current Stress:");
+							GUILayout.Label("Total Stress:");
+						GUILayout.EndVertical();
+						GUILayout.BeginVertical();
+							GUILayout.Label(kerbal.currentStress.ToString());
+							GUILayout.Label(kerbal.cumulativeStress.ToString());
+						GUILayout.EndVertical();
+					GUILayout.EndHorizontal();
+				GUILayout.EndHorizontal();
+				if(GUILayout.Button(new GUIContent(more_info, "More Info"), this.MoreInfoButton)) {
+					this.selectedKerbal = kerbal.name;
+				}
+				GUILayout.EndHorizontal();
+				if(kerbal.name == this.selectedKerbal) {
+					GUILayout.BeginHorizontal(this.ListEntryArea);
+						GUILayout.Label("More Info About Stressors");
 					GUILayout.EndHorizontal();
 				}
-				GUILayout.EndScrollView();
-				if (GUILayout.Button("Close", this.buttonStyle)) OnStateChange(DisplayState.HIDDEN, "");
-			GUILayout.EndVertical();
+			}
+			GUILayout.EndScrollView();
+			if (GUILayout.Button("Close", this.buttonStyle)) OnStateChange(DisplayState.HIDDEN, "");
 			GUI.DragWindow();
 		}
 
@@ -47,7 +83,6 @@ namespace KerbalStress
 		}
 
 		protected override void OnClose() {
-			this.kerbals = null;
 		}
 	}
 }
