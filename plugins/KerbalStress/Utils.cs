@@ -10,6 +10,8 @@ namespace KerbalStress
 	 */
 	static class Utils
 	{
+		public const int SECONDS_IN_A_KDAY = 86400;
+		
 		public static int ConvertKerbinDaysToSeconds(int days)
 		{
 			return days*60*60*24;

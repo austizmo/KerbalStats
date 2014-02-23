@@ -15,9 +15,13 @@ namespace KerbalStress
 		private GUIStyle ListEntryArea;
 		private GUIStyle StatsDisplay;
 		private GUIStyle MoreInfoButton;
+		private GUIStyle NameStyle;
 
 		//textures
 		private Texture2D more_info;
+		private Texture2D stress_meter;
+		private Texture2D stress_indicator;
+		private Texture2D total_stress_bar;
 
 		private String selectedKerbal = "";
 
@@ -26,38 +30,33 @@ namespace KerbalStress
 
 			this.ListEntryArea = new GUIStyle(this.buttonStyle);
 			this.ListEntryArea.fixedHeight = 65;
-			this.ListEntryArea.onHover = this.ListEntryArea.onNormal;
-
-			this.StatsDisplay = new GUIStyle(HighLogic.Skin.box);
-			//this.StatsDisplay.fixedHeight = 35;
-			this.StatsDisplay.fixedWidth = 210;
+			this.ListEntryArea.hover = this.ListEntryArea.normal;
 
 			this.MoreInfoButton = new GUIStyle(this.buttonStyle);
 			this.MoreInfoButton.fixedHeight = 65;
 			this.MoreInfoButton.fixedWidth = 24;
+
+			this.NameStyle = new GUIStyle(this.buttonStyle);
+			this.NameStyle.hover = this.NameStyle.normal;
+
+
+			this.more_info 			= AbstractWindow.GetTexture("KerbalStress/Resource/more_info");
+			this.stress_meter 		= AbstractWindow.GetTexture("KerbalStress/Resource/stress_meter");
+			this.total_stress_bar 	= AbstractWindow.GetTexture("KerbalStress/Resource/total_stress_bar");
+			this.stress_indicator	= AbstractWindow.GetTexture("KerbalStress/Resource/stress_indicator");
 		}
 
 		protected override void OnWindow(int id) {
-			this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, this.scrollStyle, GUILayout.Height(444));
-			this.more_info = AbstractWindow.GetTexture("KerbalStress/Resource/more_info");
+			this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, this.scrollStyle, GUILayout.Height(315), GUILayout.Width(250));
 			foreach(KSKerbal kerbal in kerbals) {
 				GUILayout.BeginHorizontal();
-				GUILayout.BeginHorizontal(this.ListEntryArea);
-					GUILayout.Label(kerbal.name, this.labelStyle);
-					GUILayout.BeginHorizontal(this.StatsDisplay);
-						GUILayout.BeginVertical();
-							GUILayout.Label("Current Stress:");
-							GUILayout.Label("Total Stress:");
-						GUILayout.EndVertical();
-						GUILayout.BeginVertical();
-							GUILayout.Label(kerbal.currentStress.ToString());
-							GUILayout.Label(kerbal.cumulativeStress.ToString());
-						GUILayout.EndVertical();
-					GUILayout.EndHorizontal();
-				GUILayout.EndHorizontal();
-				if(GUILayout.Button(new GUIContent(more_info, "More Info"), this.MoreInfoButton)) {
-					this.selectedKerbal = kerbal.name;
-				}
+					GUILayout.BeginVertical(this.ListEntryArea);
+						GUILayout.Button(kerbal.firstName, this.buttonStyle);
+						BuildStressMeter(kerbal);
+					GUILayout.EndVertical();
+					if(GUILayout.Button(new GUIContent(more_info, "More Info"), this.MoreInfoButton)) {
+						this.selectedKerbal = kerbal.name;
+					}
 				GUILayout.EndHorizontal();
 				if(kerbal.name == this.selectedKerbal) {
 					GUILayout.BeginHorizontal(this.ListEntryArea);
@@ -83,6 +82,19 @@ namespace KerbalStress
 		}
 
 		protected override void OnClose() {
+		}
+
+		private void BuildStressMeter(KSKerbal kerbal) {
+			GUILayout.Label(this.stress_meter, new GUIStyle(HighLogic.Skin.box), GUILayout.Height(24), GUILayout.Width(84));
+			Rect meterRect = GUILayoutUtility.GetLastRect();
+
+			float indicatorPosition = meterRect.x + (meterRect.width*(float)kerbal.currentStress)/2;
+			Rect indicatorRect = new Rect(indicatorPosition, meterRect.y, meterRect.width, meterRect.height);
+			GUI.Label(indicatorRect, this.stress_indicator);
+		}
+
+		private void BuildStressBar(KSKerbal kerbal) {
+
 		}
 	}
 }

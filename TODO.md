@@ -9,6 +9,7 @@ UI Design
 	-better kerbal list entry boxes, no more on hover
 	-replace text readouts of total/current stress with meter graphics (text overlay?)
 	-hook into game notification messages on important events (high stress, past breaking point, failed test)
+	-display detail stats (numbers for bars, etc) in drop down box
 Balance Tuning
 Stress Triggers
 	-crew death
@@ -16,7 +17,6 @@ Stress Triggers
 	-bedlam
 	-nearby explosion
 Situation Modifiers
-	-docking (speed/distance to taget)
 	-distance from home
 	-time alone
 	-time with crew
@@ -32,9 +32,12 @@ Mental Break Actions
 	-increase crew stress
 	-dump resources
 	-undock craft
+	-toggle action groups
+	-stage craft
 
 v2
 Astronaut Complex Integration
+Kerbal Portait UI Integration
 CLS Integration
 	-VM: CLSSpace integration
 TAC Integration
@@ -51,3 +54,34 @@ Parts
 		-allow long term sleep
 	-gravity ring
 		-removes g stress
+Stress Mods:
+	-docking (speed/distance to taget)?
+Individual stress tolerances for Kerbals
+	-socialite
+	-pilot
+	-scientist
+Lessen modifier with repeated exposure
+	-this kerbal been to the mun before? less stressful
+	-'any' kerbal been to the mun before? slightly less stressful for all kerbals with each successful Mun mission
+
+
+API NOTES
+
+Vessel.cs
+/// <summary>
+/// You can add your own function to this callback to register a function that can provide flight control input
+/// to the vessel. Once you've registered this callback, it will be called once per FixedUpdate. Provide flight
+/// control input by modifying the FlightCtrlState passed to your function. This FlightCtrlState will already
+/// contain the player's input, which you can modify or override as desired.
+/// </summary>
+/// <example>
+/// <code>
+/// void MyAutopilotFunction(FlightCtrlState s) {
+///   s.yaw = 1;
+/// }
+/// ...
+/// vessel.OnFlyByWire += MyAutopilotFunction
+/// </code>
+/// This will create an autopilot that always yaws hard to the right. You can probably devise something more useful, though...
+/// </example>
+public FlightInputCallback OnFlyByWire;

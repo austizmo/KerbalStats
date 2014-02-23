@@ -14,6 +14,7 @@ namespace KerbalStress
 	{
 		//used as a unique identifier for this kerbal
 		public String name;
+		public String firstName;
 		public double courage;
 		public double stupidity;
 		public bool isBadass;
@@ -32,7 +33,7 @@ namespace KerbalStress
 		public const double LOW_G_STRESS 		= 0.1;
 		public const double MED_G_STRESS		= 0.2;
 		public const double HIGH_G_STRESS		= 0.5;
-
+		public const double BASE_SOCIAL_STRESS	= .1;
 		public const double BASE_VESSEL_STRESS 	= 0;
 		public const double FULL_VESSEL_STRESS	= .1;
 
@@ -46,14 +47,17 @@ namespace KerbalStress
 		public double cumulativeStress;
 
 		//timer values
-		public double lastLaunchTime;
-		public double lastReturnTime;
+		public double timeAlone;
+		public double timeWithCrew;
 
 		//True when kerbal is on a mission
 		public bool onDuty = false;
 
 		public double lastCheckup;
 		public double lastStressTest;
+		public double lastSocialCheck;
+
+		private static readonly Char[] NAME_DELIMITER = new Char[] { ' ' };
 
 		/**
 		 * Given a ProtoCrewMember, create a new KSKerbal with default stats
@@ -61,6 +65,7 @@ namespace KerbalStress
 		public KSKerbal(ProtoCrewMember kerbal) {
 			//Debug.Log("Creating new kerbal");
 			this.name 			= kerbal.name;
+			this.firstName 		= kerbal.name.Split(NAME_DELIMITER)[0];
 			this.courage		= kerbal.courage;
 			this.stupidity		= kerbal.stupidity;
 			this.isBadass		= kerbal.isBadass;
@@ -69,6 +74,7 @@ namespace KerbalStress
 
 			this.lastCheckup 	= Planetarium.GetUniversalTime();
 			this.lastStressTest = Planetarium.GetUniversalTime();
+			this.lastSocialCheck= Planetarium.GetUniversalTime();
 		}
 
 		/**
@@ -140,6 +146,7 @@ namespace KerbalStress
 			if(vessel != null) {
 				double stress = GetVesselMod(vessel);
 				stress += GetGLevelMod(vessel);
+				stress += GetSocialMod(vessel);
 
 				return stress;
 			} 
@@ -173,10 +180,45 @@ namespace KerbalStress
 			Debug.Log(this.name+" failed a stress test!");
 		}
 
-		private double GetDockingMod() { return 0; }
+		/***************
+		* Stress Triggers, single instance events which add directly to cumulative stress
+		***************/
+		public void OnCrewDeath() {}
+		public void OnCollision() {}
+		public void OnBedlam() {}
+		public void OnExplosion() {}
+
+		/***************
+		* Stress Modification Functions, return modifier for current stress based on current situations
+		***************/
 		private double GetDistanceMod() { return 0; }
-		private double GetSolitudeMod() { return 0; }
-		private double GetTimeWithCrewMod() { return 0; }
+
+		/**
+		 * Returns the stress modifier indicated by the kerbals socialization timers
+		 * Being alone or with crew for more than a day increases stress levels
+		 */
+		private double GetSocialMod(Vessel vessel) { 
+			//TODO: add check for living space changes, if you have enough spaces so that one space can always host a single kerbal,
+			//assume kerbals move within the craft to deal with their social needs (implement seat moving for this purpose?)
+			double elapsed = Planetarium.GetUniversalTime() - lastSocialCheck;
+			double time;
+
+			if(vessel.GetCrewCount() == 1) {
+				this.timeWithCrew = 0;
+				this.timeAlone += elapsed;
+				time = this.timeAlone;
+			} else {
+				this.timeAlone = 0;
+				this.timeWithCrew += elapsed;
+				time = this.timeWithCrew;
+			}
+
+			if (time > Utils.SECONDS_IN_A_KDAY) {
+				return (time % Utils.SECONDS_IN_A_KDAY) * BASE_SOCIAL_STRESS; //TODO: tune these numbers so the stress mod scales for long missions
+			} else {
+				return 0;
+			}
+		}
 		private double GetFlightPathMod() { return 0; } //unstable orbit, impact time, etc
 
 		private double GetGLevelMod(Vessel vessel) {
@@ -208,6 +250,18 @@ namespace KerbalStress
 
 		private double GetDeltaVMod() { return 0; }
 		private double GetChargeMod() { return 0; }
+
+		/***************
+		* Mental Break Actions, things to do when a stress test is failed
+		***************/
+		private void GoEVA() {}
+		private void StopResponding() {}
+		private void InitiateBurn() {}
+		private void InciteBedlam() {}
+		private void DumpResources() {}
+		private void UndockCraft() {}
+		private void FlipSwitches() {} //toggle action groups at random
+		private void StageCraft() {}
 	}
 }
 

@@ -48,7 +48,7 @@ namespace KerbalStress
 		private void OnDraw() {
 			if (this.visible) {
 				if(GetHeight()==AUTO_HEIGHT) {
-					bounds = GUILayout.Window(id, bounds, OnWindowInternal, title, this.windowStyle, GUILayout.Width(GetWidth()));
+					bounds = GUILayout.Window(id, bounds, OnWindowInternal, title, this.windowStyle);
 				} else {
 					bounds = GUILayout.Window(id, bounds, OnWindowInternal, title, this.windowStyle, GUILayout.Width(GetWidth()), GUILayout.Height(GetHeight()));
 				}
