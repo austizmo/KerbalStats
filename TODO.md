@@ -6,7 +6,6 @@ if badass, decrease chance of mental break
 
 v1
 UI Design
-	-better kerbal list entry boxes, no more on hover
 	-replace text readouts of total/current stress with meter graphics (text overlay?)
 	-hook into game notification messages on important events (high stress, past breaking point, failed test)
 	-display detail stats (numbers for bars, etc) in drop down box

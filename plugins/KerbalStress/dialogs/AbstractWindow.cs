@@ -76,13 +76,8 @@ namespace KerbalStress
 		}
 
 		public static Texture2D GetTexture(String path) {
-			GameDatabase.TextureInfo ti = GameDatabase.Instance.GetTextureInfo(path);
-			if(ti!=null) {
-				return ti.texture;
-			}
-			else {
-				return null;
-			}
+			Texture2D texture = GameDatabase.Instance.GetTexture(path, false);
+			return texture;
 		}
 
 		protected void OnDestroy() {

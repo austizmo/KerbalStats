@@ -16,6 +16,7 @@ namespace KerbalStress
 		private GUIStyle StatsDisplay;
 		private GUIStyle MoreInfoButton;
 		private GUIStyle NameStyle;
+		private GUIStyle StressStyle;
 
 		//textures
 		private Texture2D more_info;
@@ -36,9 +37,10 @@ namespace KerbalStress
 			this.MoreInfoButton.fixedHeight = 65;
 			this.MoreInfoButton.fixedWidth = 24;
 
-			this.NameStyle = new GUIStyle(this.buttonStyle);
-			this.NameStyle.hover = this.NameStyle.normal;
+			this.NameStyle = new GUIStyle(HighLogic.Skin.box);
 
+			this.StressStyle = new GUIStyle(HighLogic.Skin.box);
+			this.StressStyle.imagePosition = ImagePosition.ImageOnly;
 
 			this.more_info 			= AbstractWindow.GetTexture("KerbalStress/Resource/more_info");
 			this.stress_meter 		= AbstractWindow.GetTexture("KerbalStress/Resource/stress_meter");
@@ -51,7 +53,7 @@ namespace KerbalStress
 			foreach(KSKerbal kerbal in kerbals) {
 				GUILayout.BeginHorizontal();
 					GUILayout.BeginVertical(this.ListEntryArea);
-						GUILayout.Button(kerbal.firstName, this.buttonStyle);
+						GUILayout.Button(kerbal.firstName, this.NameStyle);
 						BuildStressMeter(kerbal);
 					GUILayout.EndVertical();
 					if(GUILayout.Button(new GUIContent(more_info, "More Info"), this.MoreInfoButton)) {
@@ -59,9 +61,7 @@ namespace KerbalStress
 					}
 				GUILayout.EndHorizontal();
 				if(kerbal.name == this.selectedKerbal) {
-					GUILayout.BeginHorizontal(this.ListEntryArea);
-						GUILayout.Label("More Info About Stressors");
-					GUILayout.EndHorizontal();
+					BuildStressorList(kerbal);
 				}
 			}
 			GUILayout.EndScrollView();
@@ -85,16 +85,44 @@ namespace KerbalStress
 		}
 
 		private void BuildStressMeter(KSKerbal kerbal) {
-			GUILayout.Label(this.stress_meter, new GUIStyle(HighLogic.Skin.box), GUILayout.Height(24), GUILayout.Width(84));
+			GUILayout.Label(this.stress_meter, this.StressStyle, GUILayout.Height(24), GUILayout.Width(86));
 			Rect meterRect = GUILayoutUtility.GetLastRect();
 
-			float indicatorPosition = meterRect.x + (meterRect.width*(float)kerbal.currentStress)/2;
+			float indicatorPosition = meterRect.x + 1 + (meterRect.width*(float)kerbal.currentStress)/2;
 			Rect indicatorRect = new Rect(indicatorPosition, meterRect.y, meterRect.width, meterRect.height);
 			GUI.Label(indicatorRect, this.stress_indicator);
 		}
 
 		private void BuildStressBar(KSKerbal kerbal) {
 
+		}
+
+		private void BuildStressorList(KSKerbal kerbal) {
+			GUILayout.BeginVertical();
+			if(kerbal.onDuty) {
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Social:");
+					GUILayout.Label(kerbal.socialMod.ToString());
+				GUILayout.EndHorizontal();
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Flight Path:");
+					GUILayout.Label(kerbal.flightPathMod.ToString());
+				GUILayout.EndHorizontal();
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("G-Level:");
+					GUILayout.Label(kerbal.gLevelMod.ToString());
+				GUILayout.EndHorizontal();
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Vessel:");
+					GUILayout.Label(kerbal.vesselMod.ToString());
+				GUILayout.EndHorizontal();
+			} else {
+				GUILayout.BeginHorizontal();
+					GUILayout.Label("Resting:");
+					GUILayout.Label(KSKerbal.BASE_REST_STRESS.ToString());
+				GUILayout.EndHorizontal();
+			}
+			GUILayout.EndVertical();
 		}
 	}
 }
