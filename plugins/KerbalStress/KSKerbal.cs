@@ -29,7 +29,7 @@ namespace KerbalStress
 
 		//stressor levels
 		public const double BASE_MISSION_STRESS = 0.1;
-		public const double BASE_REST_STRESS 	= 0;//-0.1;
+		public const double BASE_REST_STRESS 	= -0.1;
 		public const double LOW_G_STRESS 		= 0.1;
 		public const double MED_G_STRESS		= 0.2;
 		public const double HIGH_G_STRESS		= 0.5;
@@ -245,6 +245,8 @@ namespace KerbalStress
 			}
 
 			this.socialMod = stress;
+
+			this.lastSocialCheck = Planetarium.GetUniversalTime();
 			return stress;
 		}
 

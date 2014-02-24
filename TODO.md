@@ -6,7 +6,7 @@ if badass, decrease chance of mental break
 
 v1
 UI Design
-	-replace text readouts of total/current stress with meter graphics (text overlay?)
+	-replace text readouts of total/current stress with meter graphics
 	-hook into game notification messages on important events (high stress, past breaking point, failed test)
 	-display detail stats (numbers for bars, etc) in drop down box
 Balance Tuning
