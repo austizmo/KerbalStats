@@ -6,25 +6,25 @@ if badass, decrease chance of mental break
 
 v1
 UI Design
-	-replace text readouts of total/current stress with meter graphics
+	-display individual breakpoint overlayed on total stress meter
 	-hook into game notification messages on important events (high stress, past breaking point, failed test)
 	-display detail stats (numbers for bars, etc) in drop down box
 Balance Tuning
 Stress Triggers
-	-crew death
+*	-crew death
 	-collision
 	-bedlam
 	-nearby explosion
 Situation Modifiers
 	-distance from home
-	-time alone
-	-time with crew
-	-unstable orbit
-	-g level
+*	-time alone
+*	-time with crew
+?*	-unstable orbit
+*	-g level
 	-livable space to crew ratio
 	-remaining delta v
 	-remaining electric charge
-Mental Break Actions
+Panic Actions
 	-eva
 	-failure to respond
 	-random burn

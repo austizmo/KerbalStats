@@ -19,6 +19,7 @@ namespace KerbalStress
 			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
 			GameEvents.onLaunch.Add(OnLaunch);
 			GameEvents.onGameStateSaved.Add(OnGameSaved);
+			GameEvents.onCrewKilled.Add(OnCrewKilled);
 		}
 
 		private void OnVesselRecovered(ProtoVessel vessel) {
@@ -46,12 +47,26 @@ namespace KerbalStress
 			SaveManager.SaveKerbals(this.model.GetKerbals());
 		}
 
+		private void OnCrewKilled(EventReport report) {
+			Debug.Log("on crew killed");
+			Vessel vessel = report.origin.vessel;
+			if(vessel!=null) {
+				foreach(KSKerbal kerbal in this.model.GetKerbals(vessel)) {
+					kerbal.OnDeath();
+				}
+			}
+			foreach(KSKerbal kerbal in this.model.GetKerbals()) {
+				kerbal.OnCrewDeath(this.model.GetKerbals(vessel).Count);
+			}
+		}
+
 		public void OnDestroy() {
 			this.model = null;
 
 			GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
 			GameEvents.onLaunch.Remove(OnLaunch);
 			GameEvents.onGameStateSaved.Remove(OnGameSaved);
+			GameEvents.onCrewKilled.Remove(OnCrewKilled);
 		}
 	}
 }

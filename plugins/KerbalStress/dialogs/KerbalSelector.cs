@@ -90,8 +90,13 @@ namespace KerbalStress
 			GUILayout.Label(this.stress_meter, this.StressStyle, GUILayout.Height(23), GUILayout.Width(85));
 			Rect meterRect = GUILayoutUtility.GetLastRect();
 
+			double maxMeterValue = KSKerbal.MAX_CURRENT_STRESS; 
+			double percentStress = kerbal.currentStress/maxMeterValue;
+			percentStress = (percentStress >=1) ? 1 : percentStress;
+			percentStress = (percentStress <=-1) ? -1 : percentStress;
+
 			RectOffset pad = this.IndicatorStyle.padding;
-			pad.left =(int)(meterRect.width*kerbal.currentStress)/2;
+			pad.left =(int)(meterRect.width*percentStress)/2;
 			pad.top = 3;
 			GUI.Label(meterRect, this.stress_indicator, this.IndicatorStyle);
 		}
