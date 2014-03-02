@@ -33,10 +33,6 @@ namespace KerbalStress
 
 		public const double BASE_SOCIAL_STRESS 	= 0.18;
 
-		public const double LOW_G_STRESS 		= 0.1; //<.65
-		public const double MED_G_STRESS		= 1; //1.5 - 6 medium g, trained individuals in g suits should be able to hand this with little trouble, but not for sustained periods
-		public const double HIGH_G_STRESS		= 8; //6 - 9 even trained astronauts in g suits have difficulty with this level of g
-
 		public const double FULL_VESSEL_STRESS	= 1;
 
 		public const double FALLING_STRESS 		= .5;
@@ -49,9 +45,9 @@ namespace KerbalStress
 		public const double COLLISION_STRESS	= 5000;
 
 		//stress level references
-		public const double LOW = .33;
-		public const double MED = 1.6;
-		public const double HIGH = 10;
+		public const double LOW 	= .33;
+		public const double MED 	= 3.75;
+		public const double HIGH 	= 10;
 
 		//stress stats
 		public double currentStress; 
@@ -138,8 +134,10 @@ namespace KerbalStress
 			//Debug.Log("on mission complete invoked for "+this.name);
 			//remove from duty
 			this.onDuty = false;
-			//reset stress mod 
+			//reset stress mod and timers
 			this.currentStress = BASE_REST_STRESS;
+			this.timeAlone = 0;
+			this.timeWithCrew = 0;
 		}
 
 		/**
@@ -165,6 +163,7 @@ namespace KerbalStress
 
 		/**
 		 * Calculates and stores the Kerbal's current stress level. 
+		 * Limits current stress to max current stress
 		 */
 		private double CalculateStress() {
 			//off duty
@@ -176,6 +175,8 @@ namespace KerbalStress
 				stress += GetGLevelMod();
 				stress += GetSocialMod();
 				stress += GetFlightPathMod();
+
+				if(stress > MAX_CURRENT_STRESS) stress = MAX_CURRENT_STRESS; //limit stress to make balance simpler. nice to have a lower limit on space flight durations
 
 				return stress;
 			} 
@@ -189,6 +190,8 @@ namespace KerbalStress
 		 * Called when a kerbal must make a stress test. Determines if the Kerbal fails the test.
 		 */
 		private void OnStressTest() {
+			//TODO: badass flag/low stupidity to influence failure chance
+			//TODO: balance failure chance
 			double elapsed = Planetarium.GetUniversalTime() - this.lastStressTest;
 			if(elapsed < 60) return;
 
@@ -335,19 +338,24 @@ namespace KerbalStress
 		 * @type {Vessel} the active vessel
 		 */
 		private double GetGLevelMod() {
-			//TODO: scale more granularly based on G level
 			double gForce 	= this.vessel.geeForce;
 			double stress 	= 0;
-			if(gForce < .65) { //exposure to low g is a major cause of physical and mental stress in the real world
-				stress = LOW_G_STRESS;
-			} else if(gForce >= .65 && gForce <= 1.55) { //if we're around normal g, it's not that stressful
+			
+			//low g stress is a major concern over long duration flights
+			if(gForce < .65) { 
+				stress = .65 - gForce;
+			}
+			//if we're around normal g, it's not stressful 
+			else if(gForce >= .65 && gForce <= 1.50) { 
 				stress = 0;
-			} else if(gForce > 1.55 && gForce <= 6) { //medium g, trained individuals in g suits should be able to hand this with little trouble, but not for sustained periods
-				stress = MED_G_STRESS;	
-			} else if(gForce > 6 && gForce <= 9) { //even trained astronauts in g suits have difficulty with this level of g
-				stress = HIGH_G_STRESS;
-			} else { //G > 9 at this level, you're probably unconscious, regardless of who you are
-				stress = MAX_CURRENT_STRESS;
+			} 
+			//under 6G, we should scale stress along a curve
+			else if(gForce > 1.5 && gForce <= 6) {
+				stress = (0.138889*Math.Pow(gForce, 3)) - (1.23611*Math.Pow(gForce, 2)) + (4.04167*gForce) - 3.75; //https://www.wolframalpha.com/input/?i=polynomial+fit&a=*C.polynomial+fit-_*Calculator.dflt-&f2=%7B%7B1.5%2C0%7D%2C%7B2%2C.5%7D%2C%7B3%2C1%7D%2C%7B6%2C6%7D%7D&f=InterpolatingPolynomialCalculator.data2_%7B%7B1.5%2C0%7D%2C%7B2%2C.5%7D%2C%7B3%2C1%7D%2C%7B6%2C6%7D%7D&a=*FVarOpt.1-_***InterpolatingPolynomialCalculator.data2--.***InterpolatingPolynomialCalculator.data---.*--
+			}
+			//otherwise, stress = gForce
+			else {
+				stress = gForce;
 			}
 
 			this.gLevelMod = stress;
