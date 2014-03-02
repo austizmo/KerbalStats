@@ -151,6 +151,7 @@ namespace KerbalStress
 					GUILayout.Label("Total:");
 					GUILayout.Label(kerbal.cumulativeStress.ToString());
 				GUILayout.EndHorizontal();
+
 			GUILayout.EndVertical();
 		}
 	}

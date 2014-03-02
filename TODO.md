@@ -1,28 +1,21 @@
 TODO List
-Crunch numbers for Mun flight
-how many high stress situations, of what durations, should a kerbal be able to withstand?
-stupidity increases severity of stress test failure
-if badass, decrease chance of mental break
-
 v1
 UI Design
 	-hook into game notification messages on important events (high stress, past breaking point, failed test)
 	-display detail stats (numbers for bars, etc) in drop down box
 Balance Tuning
 Stress Triggers
-*	-crew death
+	-crew death
 	-collision
 	-bedlam
 	-nearby explosion
 Situation Modifiers
-	-distance from home
 *	-time alone
 *	-time with crew
-*	-flight path
+	-flight path
 *	-g level
-	-livable space to crew ratio
-	-remaining delta v
-	-remaining electric charge
+*	-livable space to crew ratio
+	-remaining resources
 Panic Actions
 	-eva
 	-failure to respond
@@ -62,6 +55,9 @@ Lessen modifier with repeated exposure
 	-this kerbal been to the mun before? less stressful
 	-'any' kerbal been to the mun before? slightly less stressful for all kerbals with each successful Mun mission
 
+
+BUGS
+bug when creating new kerbals to fill a part in the VAB, then launching. null ref
 
 API NOTES
 

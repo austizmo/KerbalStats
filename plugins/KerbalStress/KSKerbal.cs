@@ -69,6 +69,8 @@ namespace KerbalStress
 		public double vesselMod;
 		public double gLevelMod;
 
+		public event BedlamHandler OnInciteBedlam;
+
 		private Vessel vessel;
 
 		private static readonly Char[] NAME_DELIMITER = new Char[] { ' ' };
@@ -215,8 +217,16 @@ namespace KerbalStress
 		 */
 		private void OnFailStressTest() {
 			//TODO: choose panic action based on current situation, attempt to avoid unrecoverable actions, like going eva on reentry
-			//do a thing!
-			this.GoEVA();
+			//TODO: stupidity influences severity of failure
+			int choice = KerbalStress.rng.Next(0,1);
+			switch(choice) {
+				case 0: 
+					this.GoEVA();
+					break;
+				case 1:
+					this.InciteBedlam();
+					break;
+			}
 		}
 
 		public void OnDeath() {
@@ -277,7 +287,7 @@ namespace KerbalStress
 		 */
 		private double GetSocialMod() { 
 			//TODO: add check for living space changes, if you have enough spaces so that one space can always host a single kerbal,
-			//assume kerbals move within the craft to deal with their social needs (implement seat moving for this purpose?)
+			//assume kerbals move within the craft to deal with their social needs (implement seat moving for this purpose?) CLS intergration dependant
 			double elapsed = Planetarium.GetUniversalTime() - lastSocialCheck;
 			double time;
 			double stress;
@@ -320,8 +330,9 @@ namespace KerbalStress
 					}
 					break;
 				case Vessel.Situations.SUB_ORBITAL:
-					//TODO: scale for time distance from planet? time from planet?
-					stress = SUB_ORBITAL_STRESS;
+					if(this.vessel.verticalSpeed < 0) { 
+						stress = SUB_ORBITAL_STRESS;
+					}
 					break;
 				case Vessel.Situations.ORBITING:
 				default:
@@ -372,18 +383,23 @@ namespace KerbalStress
 			//TODO: implement part modules and check all parts in the vessel for modifiers
 			int maxCrew 	= this.vessel.GetCrewCapacity();
 			int totalCrew 	= this.vessel.GetCrewCount();
-
+			int extraSpace 	= totalCrew - maxCrew;
+			
 			double vesselStress = 0;
 			//no extra space
-			if(totalCrew == maxCrew) {
+			if(extraSpace <= 0) {
 				vesselStress = FULL_VESSEL_STRESS;
 			} 
+			//we have extra space, give a low resting bonus
+			else { 
+				if(extraSpace > 5) extraSpace = 5;
+				vesselStress = -Math.Log(2, extraSpace)/2;
+			}
 
 			this.vesselMod = vesselStress;
 			return vesselStress;
 		}
 
-		private double GetDistanceMod() { return 0; }
 		private double GetResourceMod() { return 0; }
 
 		/***************
@@ -399,7 +415,17 @@ namespace KerbalStress
 
 		private void StopResponding() {}
 		private void InitiateBurn() {}
-		private void InciteBedlam() {}
+
+		/**
+		* Adds a static amount of stress to all kerbals in the same vessel
+		*/
+		public void InciteBedlam() {
+			//Debug.Log("fire incite bedlam event");
+			BedlamEventArgs report = new BedlamEventArgs();
+			report.vessel = this.vessel;
+			this.OnInciteBedlam(this, report);
+		}
+
 		private void DumpResources() {}
 		private void UndockCraft() {}
 		private void FlipSwitches() {} //toggle action groups at random

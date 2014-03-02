@@ -4,6 +4,14 @@ using UnityEngine;
 
 namespace KerbalStress
 {
+	/** EventArgs continer for bedlam event */
+	public class BedlamEventArgs : EventArgs {
+		public Vessel vessel;
+	}
+
+	/** Event handler for bedlam event */
+	public delegate void BedlamHandler(object sender, BedlamEventArgs e);
+
 	class GameEventManager
 	{
 		private StatsModel model;
@@ -15,6 +23,10 @@ namespace KerbalStress
 		 */
 		public GameEventManager(ref StatsModel model) {
 			this.model = model;
+
+			foreach(KSKerbal kerbal in this.model.GetKerbals()) {
+				kerbal.OnInciteBedlam += new BedlamHandler(OnInciteBedlam);
+			}
 
 			GameEvents.onVesselRecovered.Add(OnVesselRecovered);
 			GameEvents.onLaunch.Add(OnLaunch);
@@ -68,6 +80,14 @@ namespace KerbalStress
 				foreach(KSKerbal kerbal in this.model.GetKerbals(vessel)) {
 					kerbal.OnCollision();
 				}
+			}
+		}
+
+		private void OnInciteBedlam(object sender, BedlamEventArgs report) {
+			Debug.Log("caught incite bedlam event, notifying crewemates");
+			foreach(KSKerbal kerbal in this.model.GetKerbals(report.vessel)) {
+				if(kerbal.name == sender.name) continue; //don't add to our own stress level by inciting panic
+				kerbal.OnBedlam();
 			}
 		}
 
