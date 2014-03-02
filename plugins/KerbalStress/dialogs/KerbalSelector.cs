@@ -17,6 +17,7 @@ namespace KerbalStress
 		private GUIStyle NameStyle;
 		private GUIStyle StressStyle;
 		private GUIStyle IndicatorStyle;
+		private GUIStyle TotalIndicatorStyle;
 
 		//textures
 		private Texture2D more_info;
@@ -42,6 +43,7 @@ namespace KerbalStress
 			this.StressStyle.imagePosition = ImagePosition.ImageOnly;
 
 			this.IndicatorStyle = new GUIStyle(this.StressStyle);
+			this.TotalIndicatorStyle = new GUIStyle(this.StressStyle);
 
 			this.more_info 			= AbstractWindow.GetTexture("KerbalStress/Resource/more_info");
 			this.stress_meter 		= AbstractWindow.GetTexture("KerbalStress/Resource/stress_meter");
@@ -87,6 +89,7 @@ namespace KerbalStress
 		}
 
 		private void BuildStressMeter(KSKerbal kerbal) {
+			this.StressStyle.padding.left = 0;
 			GUILayout.Label(this.stress_meter, this.StressStyle, GUILayout.Height(23), GUILayout.Width(85));
 			Rect meterRect = GUILayoutUtility.GetLastRect();
 
@@ -95,23 +98,28 @@ namespace KerbalStress
 			percentStress = (percentStress >=1) ? 1 : percentStress;
 			percentStress = (percentStress <=-1) ? -1 : percentStress;
 
-			RectOffset pad = this.IndicatorStyle.padding;
-			pad.left =(int)(meterRect.width*percentStress)/2;
-			pad.top = 3;
+			Vector2 currentOffset = new Vector2();
+			currentOffset.x = (int)(meterRect.width*percentStress)/2;
+			currentOffset.y = 3;
+
+			this.IndicatorStyle.contentOffset = currentOffset;
 			GUI.Label(meterRect, this.stress_indicator, this.IndicatorStyle);
 		}
 
 		private void BuildStressBar(KSKerbal kerbal) {
-			GUILayout.Label(this.total_stress_bar, this.StressStyle, GUILayout.Height(87), GUILayout.Width(23));
+			this.StressStyle.padding.left = 1;
+			GUILayout.Label(this.total_stress_bar, this.StressStyle, GUILayout.Height(87), GUILayout.Width(24));
 			Rect meterRect = GUILayoutUtility.GetLastRect();
 
-			double percentStress = kerbal.cumulativeStress/KSKerbal.MAX_STRESS_BREAKPOINT;
+			double percentStress = kerbal.cumulativeStress/kerbal.breakpoint;
 			percentStress = (percentStress >=1) ? 1 : percentStress;
 
-			RectOffset pad = this.IndicatorStyle.padding;
-			pad.bottom =(int)(meterRect.height*percentStress) + 2;
-			pad.left = 3;
-			GUI.Label(meterRect, this.stress_indicator_90, this.IndicatorStyle);
+			Vector2 currentOffset = new Vector2();
+			currentOffset.y = (int)-(meterRect.height*percentStress) - 2;
+			currentOffset.x = 1;
+
+			this.TotalIndicatorStyle.contentOffset = currentOffset;
+			GUI.Label(meterRect, this.stress_indicator_90, this.TotalIndicatorStyle);
 		}
 
 		private void BuildStressorList(KSKerbal kerbal) {

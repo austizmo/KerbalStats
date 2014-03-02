@@ -6,7 +6,6 @@ if badass, decrease chance of mental break
 
 v1
 UI Design
-	-display individual breakpoint overlayed on total stress meter
 	-hook into game notification messages on important events (high stress, past breaking point, failed test)
 	-display detail stats (numbers for bars, etc) in drop down box
 Balance Tuning
@@ -19,7 +18,7 @@ Situation Modifiers
 	-distance from home
 *	-time alone
 *	-time with crew
-?*	-unstable orbit
+*	-flight path
 *	-g level
 	-livable space to crew ratio
 	-remaining delta v

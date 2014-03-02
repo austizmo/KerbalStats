@@ -20,6 +20,7 @@ namespace KerbalStress
 			GameEvents.onLaunch.Add(OnLaunch);
 			GameEvents.onGameStateSaved.Add(OnGameSaved);
 			GameEvents.onCrewKilled.Add(OnCrewKilled);
+			GameEvents.onCollision.Add(OnCollision);
 		}
 
 		private void OnVesselRecovered(ProtoVessel vessel) {
@@ -60,6 +61,16 @@ namespace KerbalStress
 			}
 		}
 
+		private void OnCollision(EventReport report) {
+			Debug.Log("on collision");
+			Vessel vessel = report.origin.vessel;
+			if(vessel!=null) {
+				foreach(KSKerbal kerbal in this.model.GetKerbals(vessel)) {
+					kerbal.OnCollision();
+				}
+			}
+		}
+
 		public void OnDestroy() {
 			this.model = null;
 
@@ -67,6 +78,7 @@ namespace KerbalStress
 			GameEvents.onLaunch.Remove(OnLaunch);
 			GameEvents.onGameStateSaved.Remove(OnGameSaved);
 			GameEvents.onCrewKilled.Remove(OnCrewKilled);
+			GameEvents.onCollision.Remove(OnCollision);
 		}
 	}
 }

@@ -31,7 +31,7 @@ namespace KerbalStress
 		public const double BASE_REST_STRESS 	= -3.75;
 		public const double BASE_MISSION_STRESS = 0.1;
 
-		public const double BASE_SOCIAL_STRESS = 0.18;
+		public const double BASE_SOCIAL_STRESS 	= 0.18;
 
 		public const double LOW_G_STRESS 		= 0.1; //<.65
 		public const double MED_G_STRESS		= 1; //1.5 - 6 medium g, trained individuals in g suits should be able to hand this with little trouble, but not for sustained periods
@@ -39,11 +39,16 @@ namespace KerbalStress
 
 		public const double FULL_VESSEL_STRESS	= 1;
 
+		public const double FALLING_STRESS 		= .5;
+		public const double SUB_ORBITAL_STRESS 	= .5;
 
 		//stress trigger levels
-		public const double CREW_DEATH 	= 250;
+		public const double CREW_DEATH_STRESS 	= 100000;
+		public const double BEDLAM_STRESS		= 25000;
+		public const double EXPLOSION_STRESS	= 10000;
+		public const double COLLISION_STRESS	= 5000;
 
-		//stress level breakpoints
+		//stress level references
 		public const double LOW = .33;
 		public const double MED = 1.6;
 		public const double HIGH = 10;
@@ -111,7 +116,7 @@ namespace KerbalStress
 			this.cumulativeStress += this.currentStress * elapsed;
 
 			if(this.cumulativeStress < BASE_STRESS) this.cumulativeStress = BASE_STRESS;
-			if(this.cumulativeStress >= this.breakpoint && this.currentStress > LOW) {
+			if(this.cumulativeStress >= this.breakpoint && this.currentStress >= MED) {
 				OnStressTest();
 			}
 
@@ -206,9 +211,13 @@ namespace KerbalStress
 		 * Called when a kerbal fails a stress test. Determines which of our panic actions to take.
 		 */
 		private void OnFailStressTest() {
+			//TODO: choose panic action based on current situation, attempt to avoid unrecoverable actions, like going eva on reentry
 			//do a thing!
-			Debug.Log(this.name+" paniced");
 			this.GoEVA();
+		}
+
+		public void OnDeath() {
+			Debug.Log(this.name + " has died. should I do something?");
 		}
 
 		private ProtoCrewMember GetProtoCrewMember() {
@@ -234,16 +243,24 @@ namespace KerbalStress
 		 */
 		public void OnCrewDeath(int count) {
 			//TODO: allow for increasing stress when multiple crew die
-			this.cumulativeStress += CREW_DEATH;
+			this.cumulativeStress += CREW_DEATH_STRESS;
 		}
 
-		public void OnDeath() {
-			Debug.Log(this.name + " has died. should I do something?");
+		public void OnCollision() {
+			this.cumulativeStress += COLLISION_STRESS;
 		}
 
-		public void OnCollision() {}
-		public void OnBedlam() {}
-		public void OnExplosion() {}
+		/** 
+		 * called when another kerbal on your vessel panics and incites bedlam
+		 */
+		public void OnBedlam() {
+			//TODO: track number of kerbals inciting bedlam and increase multiplier
+			this.cumulativeStress += BEDLAM_STRESS;
+		}
+		public void OnExplosion() {
+			//TODO: adjust for awesomeness of explosion
+			this.cumulativeStress += EXPLOSION_STRESS;
+		}
 
 		/***************
 		* Stress Modification Functions, return modifier for current stress based on current situations
@@ -255,7 +272,7 @@ namespace KerbalStress
 		 *
 		 * @type {Vessel} the active vessel
 		 */
-		private double GetSocialMod() { //medium
+		private double GetSocialMod() { 
 			//TODO: add check for living space changes, if you have enough spaces so that one space can always host a single kerbal,
 			//assume kerbals move within the craft to deal with their social needs (implement seat moving for this purpose?)
 			double elapsed = Planetarium.GetUniversalTime() - lastSocialCheck;
@@ -273,15 +290,15 @@ namespace KerbalStress
 			}
 
 			if (time > Utils.SECONDS_IN_A_KDAY) {
-				stress = ((time % Utils.SECONDS_IN_A_KDAY) - Utils.SECONDS_IN_A_KDAY) * BASE_SOCIAL_STRESS; //TODO: tune these numbers so the stress mod scales for long missions
+				stress = (time/Utils.SECONDS_IN_A_KDAY) * BASE_SOCIAL_STRESS;
 			} else {
 				stress = 0;
 			}
 
-			this.socialMod = 0;
+			this.socialMod = stress;
 
 			this.lastSocialCheck = Planetarium.GetUniversalTime();
-			return 0;
+			return stress;
 		}
 
 		/**
@@ -289,22 +306,27 @@ namespace KerbalStress
 		 *
 		 * @type {Vessel} the active vessel
 		 */
-		private double GetFlightPathMod() { //high
+		private double GetFlightPathMod() { 
 			Vessel.Situations situation = this.vessel.situation;
-			double stress;
+			double stress = 0;
 			switch(situation) {
-			case Vessel.Situations.SUB_ORBITAL:
-					//TODO: increase with decreasing impact time
-					//TODO: increase if vertical velocity is decreasing
+				case Vessel.Situations.FLYING:
+					//TODO: add altitude and impact time stresses
+					if(this.vessel.verticalSpeed < -20) { //falling at ~45mph
+						stress = FALLING_STRESS;
+					}
 					break;
-			case Vessel.Situations.ORBITING:
+				case Vessel.Situations.SUB_ORBITAL:
+					//TODO: scale for time distance from planet? time from planet?
+					stress = SUB_ORBITAL_STRESS;
 					break;
+				case Vessel.Situations.ORBITING:
 				default:
 					stress = 0;
 					break;
 			}
-			this.flightPathMod = 0;
-			return 0;
+			this.flightPathMod = stress;
+			return stress;
 		} 
 
 		/**
@@ -313,6 +335,7 @@ namespace KerbalStress
 		 * @type {Vessel} the active vessel
 		 */
 		private double GetGLevelMod() {
+			//TODO: scale more granularly based on G level
 			double gForce 	= this.vessel.geeForce;
 			double stress 	= 0;
 			if(gForce < .65) { //exposure to low g is a major cause of physical and mental stress in the real world
@@ -356,10 +379,11 @@ namespace KerbalStress
 		private double GetResourceMod() { return 0; }
 
 		/***************
-		* Mental Break Actions, things to do when a stress test is failed
+		* Panic Actions, things to do when a stress test is failed
 		***************/
 		
 		private void GoEVA() {
+			//TODO: implement eva burn, towards nearest body?
 			FlightEVA eva = FlightEVA.fetch;
 			ProtoCrewMember crew = this.GetProtoCrewMember();
 			eva.spawnEVA(crew, crew.KerbalRef.InPart, crew.KerbalRef.InPart.airlock);
