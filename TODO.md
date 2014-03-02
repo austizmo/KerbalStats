@@ -7,7 +7,7 @@ Balance Tuning
 Stress Triggers
 	-crew death
 	-collision
-	-bedlam
+*	-bedlam
 	-nearby explosion
 Situation Modifiers
 *	-time alone
@@ -17,14 +17,12 @@ Situation Modifiers
 *	-livable space to crew ratio
 	-remaining resources
 Panic Actions
-	-eva
-	-failure to respond
-	-random burn
-	-increase crew stress
+*	-eva
+*	-random burn
+*	-increase crew stress
 	-dump resources
 	-undock craft
 	-toggle action groups
-	-stage craft
 
 v2
 Astronaut Complex Integration
@@ -57,7 +55,9 @@ Lessen modifier with repeated exposure
 
 
 BUGS
-bug when creating new kerbals to fill a part in the VAB, then launching. null ref
+bug when hiring new kerbals in game
+bug on kerbal death
+bug when loading kerbals
 
 API NOTES
 

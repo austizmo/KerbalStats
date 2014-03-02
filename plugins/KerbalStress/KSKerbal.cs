@@ -44,6 +44,8 @@ namespace KerbalStress
 		public const double EXPLOSION_STRESS	= 10000;
 		public const double COLLISION_STRESS	= 5000;
 
+		public const double MAX_PANIC_TIME		= 30;
+
 		//stress level references
 		public const double LOW 	= .33;
 		public const double MED 	= 3.75;
@@ -60,18 +62,25 @@ namespace KerbalStress
 		//True when kerbal is on a mission
 		public bool onDuty = false;
 
+		//True when kerbal is paniced
+		public bool paniced = false;
+
 		public double lastCheckup;
 		public double lastStressTest;
 		public double lastSocialCheck;
+		public double panicStart;
 
 		public double socialMod;
 		public double flightPathMod;
 		public double vesselMod;
 		public double gLevelMod;
 
+		public String autopilotMode;
+
 		public event BedlamHandler OnInciteBedlam;
 
 		private Vessel vessel;
+		private ProtoCrewMember crewMember;
 
 		private static readonly Char[] NAME_DELIMITER = new Char[] { ' ' };
 
@@ -98,14 +107,29 @@ namespace KerbalStress
 		 */
 		public KSKerbal() {}
 
+		private ProtoCrewMember ProtoCrewMember {
+			get {
+				if(this.crewMember == null) {
+					foreach (ProtoCrewMember kerbal in HighLogic.CurrentGame.CrewRoster) {
+						if(this.name == kerbal.name) {
+							this.crewMember = kerbal;
+						}
+					}
+				}
+				return this.crewMember;
+			}
+		}
+
 		/**
 		 * Invoked repeatedly (once per second for active vessel kerbals, twice per minute for all others)
 		 * Determines the current stress levels for kerbals and checks if they should make a stress test
-		 * 
-		 * @type {bool} is this check for the active vessel only?
 		 */
-		public void Checkup(bool activeCheck = false) {
-			this.vessel = (activeCheck) ? FlightGlobals.ActiveVessel : null;
+		public void Checkup() {
+			this.vessel = this.ProtoCrewMember.KerbalRef.InVessel;
+
+			if(this.paniced) {
+				EndPanicIfAble();
+			}
 
 			this.currentStress = CalculateStress();
 			
@@ -189,6 +213,26 @@ namespace KerbalStress
 		}
 
 		/**
+		* Checks if the kerbal can calm down, and removes panic actions if so
+		*/
+		private void EndPanicIfAble() {
+			//TODO: factor in kerbal's courage, stress above breakpoint, and current stress, in addition to time
+			//TODO: if there are kerbals below their breakpoints on board, increase chance of calming
+			double timePaniced = Planetarium.GetUniversalTime() - this.panicStart;
+			if(timePaniced > MAX_PANIC_TIME) {
+				this.paniced = false;
+				if(this.autopilotMode != null) {
+					switch(this.autopilotMode) {
+						case "BurnRandom":
+							this.ProtoCrewMember.KerbalRef.InVessel.OnFlyByWire -= AutoPiloter.BurnRandom;
+							break;
+					}
+				}
+				
+			}
+		}
+
+		/**
 		 * Called when a kerbal must make a stress test. Determines if the Kerbal fails the test.
 		 */
 		private void OnStressTest() {
@@ -215,34 +259,55 @@ namespace KerbalStress
 		/**
 		 * Called when a kerbal fails a stress test. Determines which of our panic actions to take.
 		 */
-		private void OnFailStressTest() {
-			//TODO: choose panic action based on current situation, attempt to avoid unrecoverable actions, like going eva on reentry
+		public void OnFailStressTest() {
+			this.paniced = true;
+			this.panicStart = Planetarium.GetUniversalTime();
+
+			int choice;
 			//TODO: stupidity influences severity of failure
-			int choice = KerbalStress.rng.Next(0,1);
-			switch(choice) {
-				case 0: 
-					this.GoEVA();
+			Vessel.Situations situation = this.vessel.situation;
+			switch(situation) {
+				case Vessel.Situations.LANDED:
+				case Vessel.Situations.SPLASHED:
+					choice = KerbalStress.rng.Next(0,1);
+					switch(choice) {
+						case 0:
+							InciteBedlam();
+							break;
+						case 1:
+							GoEVA();
+							break;
+					}
 					break;
-				case 1:
-					this.InciteBedlam();
+				case Vessel.Situations.FLYING:
+					choice = KerbalStress.rng.Next(0,1);
+					switch(choice) {
+						case 0:
+							InciteBedlam();
+							break;
+						case 1:
+							InitiateBurn();
+							break;
+					}
+					break;
+				case Vessel.Situations.SUB_ORBITAL:
+				case Vessel.Situations.ORBITING:
+				case Vessel.Situations.ESCAPING:
+				case Vessel.Situations.DOCKED:
+					choice = KerbalStress.rng.Next(0,2);
+					switch(choice) {
+						case 0:
+							InciteBedlam();
+							break;
+						case 1:
+							GoEVA();
+							break;
+						case 2:
+							InitiateBurn();
+							break;
+					}
 					break;
 			}
-		}
-
-		public void OnDeath() {
-			Debug.Log(this.name + " has died. should I do something?");
-		}
-
-		private ProtoCrewMember GetProtoCrewMember() {
-			if(this.vessel == null) return null;
-
-			foreach(ProtoCrewMember crew in this.vessel.GetVesselCrew()) {
-				if(this.name == crew.name) {
-					return crew;
-				}
-			}
-
-			return null;
 		}
 
 		/***************
@@ -254,7 +319,7 @@ namespace KerbalStress
 		 * 
 		 * @type {int} number of crew members lost
 		 */
-		public void OnCrewDeath(int count) {
+		public void OnCrewDeath() {
 			//TODO: allow for increasing stress when multiple crew die
 			this.cumulativeStress += CREW_DEATH_STRESS;
 		}
@@ -409,12 +474,15 @@ namespace KerbalStress
 		private void GoEVA() {
 			//TODO: implement eva burn, towards nearest body?
 			FlightEVA eva = FlightEVA.fetch;
-			ProtoCrewMember crew = this.GetProtoCrewMember();
-			eva.spawnEVA(crew, crew.KerbalRef.InPart, crew.KerbalRef.InPart.airlock);
+			eva.spawnEVA(this.ProtoCrewMember, this.ProtoCrewMember.KerbalRef.InPart, this.ProtoCrewMember.KerbalRef.InPart.airlock);
+			this.autopilotMode = "BurnRandom";
+			this.ProtoCrewMember.KerbalRef.InVessel.OnFlyByWire += AutoPiloter.BurnRandom;
 		}
 
-		private void StopResponding() {}
-		private void InitiateBurn() {}
+		private void InitiateBurn() {
+			this.autopilotMode = "BurnRandom";
+			this.vessel.OnFlyByWire += AutoPiloter.BurnRandom;
+		}
 
 		/**
 		* Adds a static amount of stress to all kerbals in the same vessel
@@ -429,7 +497,6 @@ namespace KerbalStress
 		private void DumpResources() {}
 		private void UndockCraft() {}
 		private void FlipSwitches() {} //toggle action groups at random
-		private void StageCraft() {}
 	}
 }
 

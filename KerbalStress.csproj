@@ -66,6 +66,7 @@
     <Compile Include="plugins\KerbalStress\dialogs\KerbalSelector.cs" />
     <Compile Include="plugins\KerbalStress\Properties\AssemblyInfo.cs" />
     <Compile Include="plugins\KerbalStress\GameEventManager.cs" />
+    <Compile Include="plugins\KerbalStress\AutoPiloter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

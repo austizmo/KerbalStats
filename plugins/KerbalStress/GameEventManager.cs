@@ -10,7 +10,7 @@ namespace KerbalStress
 	}
 
 	/** Event handler for bedlam event */
-	public delegate void BedlamHandler(object sender, BedlamEventArgs e);
+	public delegate void BedlamHandler(KSKerbal sender, BedlamEventArgs e);
 
 	class GameEventManager
 	{
@@ -62,14 +62,8 @@ namespace KerbalStress
 
 		private void OnCrewKilled(EventReport report) {
 			Debug.Log("on crew killed");
-			Vessel vessel = report.origin.vessel;
-			if(vessel!=null) {
-				foreach(KSKerbal kerbal in this.model.GetKerbals(vessel)) {
-					kerbal.OnDeath();
-				}
-			}
 			foreach(KSKerbal kerbal in this.model.GetKerbals()) {
-				kerbal.OnCrewDeath(this.model.GetKerbals(vessel).Count);
+				kerbal.OnCrewDeath();
 			}
 		}
 
@@ -83,7 +77,7 @@ namespace KerbalStress
 			}
 		}
 
-		private void OnInciteBedlam(object sender, BedlamEventArgs report) {
+		private void OnInciteBedlam(KSKerbal sender, BedlamEventArgs report) {
 			Debug.Log("caught incite bedlam event, notifying crewemates");
 			foreach(KSKerbal kerbal in this.model.GetKerbals(report.vessel)) {
 				if(kerbal.name == sender.name) continue; //don't add to our own stress level by inciting panic

@@ -141,6 +141,9 @@ namespace KerbalStress
 					GUILayout.Label("Vessel:");
 					GUILayout.Label(kerbal.vesselMod.ToString());
 				GUILayout.EndHorizontal();
+				if(GUILayout.Button("Panic!", this.buttonStyle)) {
+					kerbal.OnFailStressTest();
+				}
 			} else {
 				GUILayout.BeginHorizontal();
 					GUILayout.Label("Resting:");

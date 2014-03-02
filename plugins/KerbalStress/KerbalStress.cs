@@ -65,7 +65,7 @@ namespace KerbalStress
 		public void RunActiveKerbalCheckup() {
 			if(HighLogic.LoadedScene == GameScenes.FLIGHT) {
 				foreach(KSKerbal kerbal in model.GetKerbals(FlightGlobals.ActiveVessel)) {
-					kerbal.Checkup(true);
+					kerbal.Checkup();
 				}
 			}
 		}
